@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
-import Header from './components/layout/Header'
-import RiskGauge from './components/dashboard/RiskGauge'
-import StatCards from './components/dashboard/StatCards'
-import AnomalyChart from './components/dashboard/AnomalyChart'
-import LogStream from './components/dashboard/LogStream'
-import ThreatTimeline from './components/dashboard/ThreatTimeline'
-import SimulationPanel from './components/dashboard/SimulationPanel'
-import AlertBanner from './components/alerts/AlertBanner'
-import AlertToast from './components/alerts/AlertToast'
+import Header from '@/components/layout/Header';
+import RiskGauge from '@/components/dashboard/RiskGauge';
+import StatCards from '@/components/dashboard/StatCards';
+import AnomalyChart from '@/components/dashboard/AnomalyChart';
+import LogStream from '@/components/dashboard/LogStream';
+import ThreatTimeline from '@/components/dashboard/ThreatTimeline';
+import SimulationPanel from '@/components/dashboard/SimulationPanel';
+import AlertBanner from '@/components/alerts/AlertBanner';
+import AlertToast from '@/components/alerts/AlertToast';  
 
 function App() {
   const [riskScore, setRiskScore] = useState(95)

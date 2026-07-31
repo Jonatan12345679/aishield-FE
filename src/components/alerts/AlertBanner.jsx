@@ -17,7 +17,7 @@ export default function AlertBanner({ data }) {
         </div>
       </div>
       
-      {/* Explainable AI Panel */}
+      {/* Penjelasan Panel AI */}
       <div className="mt-4 pt-4 border-t border-rose-500/20">
         <div className="text-xs text-rose-400/60 mb-2 font-semibold uppercase tracking-wider">AI Analysis</div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
