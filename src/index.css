@@ -1,38 +1,10 @@
 @import "tailwindcss";
+@import "@pxlkit/ui-kit/styles.css";
 
-@theme {
-  /* Custom colors */
-  --color-slate-950: #020617;
-  --color-slate-900: #0f172a;
-  --color-slate-800: #1e293b;
-  --color-slate-700: #334155;
-  --color-slate-600: #475569;
-  --color-slate-500: #64748b;
-  --color-slate-400: #94a3b8;
-  --color-slate-300: #cbd5e1;
-  --color-slate-200: #e2e8f0;
-  --color-slate-100: #f1f5f9;
+/* Tell Tailwind to scan the package for its utility classes */
+@source "../node_modules/@pxlkit/ui-kit";
 
-  --color-cyan-400: #22d3ee;
-  --color-cyan-500: #06b6d4;
-
-  --color-emerald-400: #34d399;
-  --color-emerald-500: #10b981;
-
-  --color-rose-400: #fb7185;
-  --color-rose-500: #f43f5e;
-
-  --color-amber-400: #fbbf24;
-
-  /* Custom fonts */
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-
-  /* Custom animations */
-  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-slide-in: slideIn 0.5s ease-out;
-}
-
+/* Font pixelated/retro (fallback) */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
@@ -41,34 +13,28 @@
   src: url('https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcviYwY.woff2') format('woff2');
 }
 
-@font-face {
-  font-family: 'JetBrains Mono';
-  font-style: normal;
-  font-weight: 400 500;
-  font-display: swap;
-  src: url('https://fonts.gstatic.com/s/jetbrainsmono/v18/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxjPVmUsaaDhw.woff2') format('woff2');
-}
-
 body {
-  background-color: var(--color-slate-950);
-  color: var(--color-slate-100);
-  font-family: var(--font-sans);
+  background-color: #020617;
+  color: #f1f5f9;
+  font-family: 'Inter', system-ui, sans-serif;
+  image-rendering: pixelated;
 }
 
-/* Custom scrollbar */
+/* Scrollbar retro */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background-color: var(--color-slate-900);
+  background-color: #0f172a;
+  border: 1px solid #1e293b;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: var(--color-slate-700);
-  border-radius: 9999px;
+  background-color: #334155;
+  border: 1px solid #475569;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-slate-600);
+  background-color: #64748b;
 }
 
 /* Gauge animation */
@@ -76,13 +42,11 @@ body {
   transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes slideIn {
-  0% {
-    transform: translateY(-10px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
+/* Pixel border helper */
+.pixel-border {
+  box-shadow: 
+    -2px 0 0 0 #0f172a,
+    2px 0 0 0 #0f172a,
+    0 -2px 0 0 #0f172a,
+    0 2px 0 0 #0f172a;
 }
