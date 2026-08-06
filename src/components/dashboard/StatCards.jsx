@@ -1,25 +1,63 @@
-import { FileText, CheckCircle, AlertTriangle, Zap } from 'lucide-react'
+import { PixelCard } from '@pxlkit/ui-kit'
+import { PxlKitIcon } from '@pxlkit/core'
+import { CheckCircle, ShieldExclamation } from '@pxlkit/feedback'
+import { Lightning } from '@pxlkit/gamification'
+import { Edit } from '@pxlkit/ui'
 
 export default function StatCards({ stats }) {
   const cards = [
-    { label: 'Total Logs Analyzed', value: stats.totalLogs.toLocaleString(), icon: FileText, color: 'text-slate-100' },
-    { label: 'Normal Activities', value: stats.normalCount.toLocaleString(), icon: CheckCircle, color: 'text-emerald-400' },
-    { label: 'Threats Blocked', value: stats.threatCount.toLocaleString(), icon: AlertTriangle, color: 'text-rose-400' },
-    { label: 'Avg Response Time', value: stats.avgResponse, icon: Zap, color: 'text-cyan-400' },
+    { label: 'TOTAL LOGS', value: stats.totalLogs.toLocaleString(), icon: Edit, textColor: 'text-slate-100', iconColor: '#f1f5f9', bg: 'bg-slate-800' },
+    { label: 'NORMAL', value: stats.normalCount.toLocaleString(), icon: CheckCircle, textColor: 'text-emerald-400', iconColor: '#34d399', bg: 'bg-emerald-950/40' },
+    { label: 'BLOCKED', value: stats.threatCount.toLocaleString(), icon: ShieldExclamation, textColor: 'text-rose-400', iconColor: '#fb7185', bg: 'bg-rose-950/40' },
+    { label: 'LATENCY', value: stats.avgResponse, icon: Lightning, textColor: 'text-cyan-400', iconColor: '#22d3ee', bg: 'bg-cyan-950/40' },
   ]
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-      <h3 className="text-sm font-medium text-slate-400">SECURITY METRICS</h3>
+    <PixelCard 
+      tone="dark" 
+      className="p-5 bg-slate-900/90 border-2 border-slate-700 backdrop-blur h-full"
+    >
+      {/* Header */}
+      <div className="mb-5 border-b-2 border-slate-800 pb-3">
+        <h3 className="text-xs font-bold text-slate-300 font-mono uppercase tracking-widest">
+          Security Metrics
+        </h3>
+      </div>
+
+      {/* Grid Kartu */}
       <div className="grid grid-cols-2 gap-4">
         {cards.map((card, i) => (
-          <div key={i} className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50 hover:border-slate-600 transition-colors">
-            <card.icon className={`w-5 h-5 ${card.color} mb-2`} />
-            <div className={`text-2xl font-bold ${card.color}`}>{card.value}</div>
-            <div className="text-xs text-slate-500 mt-1">{card.label}</div>
+          <div 
+            key={i} 
+            className={`
+              relative p-4 border-2 border-slate-700 rounded-none ${card.bg}
+              shadow-[4px_4px_0px_0px_rgba(0,0,0,0.8)] 
+              hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] 
+              transition-all duration-150 cursor-default
+            `}
+          >
+            <div className="mb-3">
+              {/* Icon */}
+              <PxlKitIcon 
+                icon={card.icon} 
+                size={24} 
+                appearance="solid" 
+                color={card.iconColor} 
+              />
+            </div>
+            
+            {/* Nilai Angka */}
+            <div className={`text-2xl font-black font-mono ${card.textColor}`}>
+              {card.value}
+            </div>
+            
+            {/* Label */}
+            <div className="text-[10px] text-slate-400 font-mono mt-1 uppercase tracking-widest font-bold">
+              {card.label}
+            </div>
           </div>
         ))}
       </div>
-    </div>
+    </PixelCard>
   )
 }
