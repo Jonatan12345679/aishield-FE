@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { PxlKitIcon } from '@pxlkit/core'
 import { Shield } from '@pxlkit/gamification'
 import { PixelIconFrame, PixelBadge, PixelPulse } from '@pxlkit/ui-kit'
+import { Navigate } from 'react-router-dom'
 
 export default function Header({ isThreatActive }) {
   const [time, setTime] = useState('')

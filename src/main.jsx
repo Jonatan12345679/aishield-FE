@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { PxlKitSurfaceProvider } from '@pxlkit/ui-kit'
 import App from './App.jsx'
+import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 
 
@@ -21,10 +22,13 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <PxlKitSurfaceProvider surface="pixel">
-    <App />
-    </PxlKitSurfaceProvider>
-  </React.StrictMode>,
+    <BrowserRouter>
+      <PxlKitSurfaceProvider surface="pixel">
+        <App />
+      </PxlKitSurfaceProvider>
+    </BrowserRouter>
+  </React.StrictMode>
 )
