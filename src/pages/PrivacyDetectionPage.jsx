@@ -26,6 +26,8 @@ import {
   blurPrivacy,
 } from '@/api/privacyApi'
 
+import LoadingScreen from '@/components/LoadingScreen'
+
 const STATUS = {
   IDLE: 'idle',
   READY: 'ready',
@@ -52,24 +54,29 @@ export default function PrivacyDetectionPage() {
   const [scanResultUrl, setScanResultUrl] = useState(null)
   const [blurResultUrl, setBlurResultUrl] = useState(null)
   const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const currentFile = files[0] ?? null
 
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl)
-      }
-
-      if (scanResultUrl) {
-        URL.revokeObjectURL(scanResultUrl)
-      }
-
-      if (blurResultUrl) {
-        URL.revokeObjectURL(blurResultUrl)
-      }
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
     }
-  }, [previewUrl, scanResultUrl, blurResultUrl])
+  }, [previewUrl])
+
+  useEffect(() => {
+    return () => {
+      if (scanResultUrl) URL.revokeObjectURL(scanResultUrl)
+    }
+  }, [scanResultUrl])
+
+  useEffect(() => {
+    return () => {
+      if (blurResultUrl) URL.revokeObjectURL(blurResultUrl)
+    }
+  }, [blurResultUrl])
 
   const handleFilesChange = useCallback(
     (nextFiles) => {
@@ -106,62 +113,84 @@ export default function PrivacyDetectionPage() {
   )
 
   const handleDetection = useCallback(async () => {
-    if (!currentFile || status === STATUS.PROCESSING) {
+    if (!currentFile || loading) {
       return
     }
 
     try {
-      setStatus(STATUS.PROCESSING)
+      setLoading(true)
       setError(null)
 
+      const start = Date.now()
+
       const result = await scanPrivacy(currentFile)
+
+      const elapsed = Date.now() - start
+
+      if (elapsed < 2000) {
+        await delay(2000 - elapsed)
+      }
 
       if (scanResultUrl) {
         URL.revokeObjectURL(scanResultUrl)
       }
 
-      setScanResultUrl(result.url)
+      setScanResultUrl(result.image)
+
       setStatus(STATUS.DONE)
     } catch (error) {
       console.error('Privacy scan error:', error)
 
       setError(
         error.message ||
-          'Gagal melakukan privacy detection.'
+        'Gagal melakukan privacy detection.'
       )
 
       setStatus(STATUS.READY)
+    } finally {
+      setLoading(false)
     }
-  }, [currentFile, status, scanResultUrl])
+  }, [currentFile, loading, scanResultUrl])
 
   const handleBlur = useCallback(async () => {
-    if (!currentFile || status === STATUS.PROCESSING) {
+    if (!currentFile || loading) {
       return
     }
 
     try {
-      setStatus(STATUS.PROCESSING)
+      setLoading(true)
       setError(null)
 
+      const start = Date.now()
+
       const result = await blurPrivacy(currentFile)
+
+      const elapsed = Date.now() - start
+
+      if (elapsed < 2000) {
+        await delay(2000 - elapsed)
+      }
 
       if (blurResultUrl) {
         URL.revokeObjectURL(blurResultUrl)
       }
 
-      setBlurResultUrl(result.url)
+      setBlurResultUrl(result.image)
+
       setStatus(STATUS.DONE)
     } catch (error) {
       console.error('Privacy blur error:', error)
 
       setError(
         error.message ||
-          'Gagal melakukan privacy blur.'
+        'Gagal melakukan privacy blur.'
       )
 
       setStatus(STATUS.READY)
+    } finally {
+      setLoading(false)
     }
-  }, [currentFile, status, blurResultUrl])
+  }, [currentFile, loading, blurResultUrl])
 
   const reset = useCallback(() => {
     if (previewUrl) {
@@ -293,7 +322,7 @@ export default function PrivacyDetectionPage() {
                 <div className="flex items-center gap-2">
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${
-                      status === STATUS.PROCESSING
+                      loading
                         ? 'animate-pulse bg-amber-400'
                         : 'bg-emerald-400'
                     }`}
@@ -301,12 +330,12 @@ export default function PrivacyDetectionPage() {
 
                   <span
                     className={`font-mono text-[9px] tracking-widest ${
-                      status === STATUS.PROCESSING
+                      loading
                         ? 'text-amber-400'
                         : 'text-emerald-400'
                     }`}
                   >
-                    {status === STATUS.PROCESSING
+                    {loading
                       ? 'PROCESSING'
                       : 'ENGINE ONLINE'}
                   </span>
@@ -408,7 +437,7 @@ export default function PrivacyDetectionPage() {
                           )}
 
                           {/* Processing overlay */}
-                          {status === STATUS.PROCESSING && (
+                          {loading && (
                             <div className="absolute inset-0 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm">
                               <div className="text-center">
                                 <div className="mx-auto h-10 w-10 animate-spin border-2 border-slate-700 border-t-cyan-400" />
@@ -457,16 +486,16 @@ export default function PrivacyDetectionPage() {
                               tone="green"
                               disabled={
                                 !currentFile ||
-                                status === STATUS.PROCESSING
+                                loading
                               }
                               loading={
-                                status === STATUS.PROCESSING
+                                loading
                               }
                               onClick={handleDetection}
                             >
                               <ScanLine size={14} />
 
-                              {status === STATUS.PROCESSING
+                              {loading
                                 ? 'SCANNING...'
                                 : 'DETECT PRIVACY'}
                             </PixelButton>
@@ -476,16 +505,16 @@ export default function PrivacyDetectionPage() {
                             <PixelButton
                               tone="green"
                               disabled={
-                                status === STATUS.PROCESSING
+                                loading
                               }
                               loading={
-                                status === STATUS.PROCESSING
+                                loading
                               }
                               onClick={handleBlur}
                             >
                               <ShieldCheck size={14} />
 
-                              {status === STATUS.PROCESSING
+                              {loading
                                 ? 'PROTECTING...'
                                 : 'BLUR PRIVACY'}
                             </PixelButton>
@@ -883,7 +912,15 @@ export default function PrivacyDetectionPage() {
           </PixelContainer>
         </main>
       </PxlKitSurfaceProvider>
+      {loading && (
+      <div className="fixed inset-0 z-50">
+        <LoadingScreen />
+      </div>
+    )}
     </div>
+
+    
+    
   )
 }
 

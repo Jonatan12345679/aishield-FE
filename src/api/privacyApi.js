@@ -8,7 +8,7 @@ export async function scanPrivacy(file) {
   formData.append('image', file)
 
   const response = await fetch(
-    `${BACKEND_BASE_URL}/scan`,
+    `${BACKEND_BASE_URL}/api/v1/scan`,
     {
       method: 'POST',
       body: formData,
@@ -32,12 +32,9 @@ export async function scanPrivacy(file) {
     throw new Error(message)
   }
 
-  const blob = await response.blob()
+  const data = await response.json()
 
-  return {
-    blob,
-    url: URL.createObjectURL(blob),
-  }
+  return data
 }
 
 
@@ -47,7 +44,7 @@ export async function blurPrivacy(file) {
   formData.append('image', file)
 
   const response = await fetch(
-    `${BACKEND_BASE_URL}/blur`,
+    `${BACKEND_BASE_URL}/api/v1/blur`,
     {
       method: 'POST',
       body: formData,
@@ -71,10 +68,7 @@ export async function blurPrivacy(file) {
     throw new Error(message)
   }
 
-  const blob = await response.blob()
+  const data = await response.json()
 
-  return {
-    blob,
-    url: URL.createObjectURL(blob),
-  }
+  return data
 }
