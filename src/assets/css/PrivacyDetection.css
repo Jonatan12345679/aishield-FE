@@ -1,0 +1,378 @@
+/* =========================================================================
+   PRIVACY SCANNER — FULL PIXEL RETRO THEME
+   Signature device: "stair-step" pixel-cut corners (klasik NES dialog-box),
+   dibuat pure CSS pakai teknik 2-layer clip-path (outer = warna aksen jadi
+   border, inner = background panel) — bukan border-radius/neon-glow biasa.
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+:root {
+  --pixel-bg: #05070a;
+  --pixel-surface: #0d131d;
+  --pixel-surface-2: #10182380;
+  --pixel-cyan: #00ffcc;
+  --pixel-cyan-2: #00ffff;
+  --pixel-magenta: #ff00ff;
+  --pixel-yellow: #ffcc00;
+  --pixel-green: #00ff66;
+  --pixel-red: #ff3355;
+  --pixel-cut: 8px;   /* ukuran potongan sudut tangga */
+  --pixel-border: 4px;
+}
+
+.pixel-root {
+  font-family: 'VT323', monospace;
+  image-rendering: pixelated;
+}
+
+.font-pixel-display {
+  font-family: 'Press Start 2P', monospace;
+  letter-spacing: 0.02em;
+}
+
+.font-pixel-body {
+  font-family: 'VT323', monospace;
+  letter-spacing: 0.01em;
+}
+
+.pixel-render {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* ---------- background layers ---------- */
+
+.pixel-dither {
+  background-color: var(--pixel-bg);
+  background-image:
+    repeating-conic-gradient(#0c1017 0% 25%, transparent 0% 50%);
+  background-size: 4px 4px;
+  opacity: 0.35;
+}
+
+.scanline-bg {
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+}
+
+@keyframes pixel-flicker {
+  0%, 96%, 100% { opacity: 1; }
+  97% { opacity: 0.85; }
+  98% { opacity: 1; }
+}
+
+.pixel-root { animation: pixel-flicker 6s steps(1) infinite; }
+
+/* ---------- signature: stair-step pixel frame ---------- */
+
+.pixel-frame {
+  --accent: var(--pixel-cyan);
+  position: relative;
+  padding: var(--pixel-border);
+  background: var(--accent);
+  clip-path: polygon(
+    0 var(--pixel-cut), var(--pixel-cut) var(--pixel-cut), var(--pixel-cut) 0,
+    calc(100% - var(--pixel-cut)) 0, calc(100% - var(--pixel-cut)) var(--pixel-cut), 100% var(--pixel-cut),
+    100% calc(100% - var(--pixel-cut)), calc(100% - var(--pixel-cut)) calc(100% - var(--pixel-cut)), calc(100% - var(--pixel-cut)) 100%,
+    var(--pixel-cut) 100%, var(--pixel-cut) calc(100% - var(--pixel-cut)), 0 calc(100% - var(--pixel-cut))
+  );
+}
+
+.pixel-frame-inner {
+  background: var(--pixel-surface);
+  height: 100%;
+  clip-path: polygon(
+    0 var(--pixel-cut), var(--pixel-cut) var(--pixel-cut), var(--pixel-cut) 0,
+    calc(100% - var(--pixel-cut)) 0, calc(100% - var(--pixel-cut)) var(--pixel-cut), 100% var(--pixel-cut),
+    100% calc(100% - var(--pixel-cut)), calc(100% - var(--pixel-cut)) calc(100% - var(--pixel-cut)), calc(100% - var(--pixel-cut)) 100%,
+    var(--pixel-cut) 100%, var(--pixel-cut) calc(100% - var(--pixel-cut)), 0 calc(100% - var(--pixel-cut))
+  );
+}
+
+.pixel-accent-cyan { --accent: var(--pixel-cyan); }
+.pixel-accent-red { --accent: var(--pixel-red); }
+
+/* ---------- title bar strip ---------- */
+
+.pixel-titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: var(--pixel-border) solid #1c2836;
+  background: repeating-linear-gradient(45deg, #0a0f16 0 2px, #0d131d 2px 4px);
+}
+
+.pixel-strip {
+  background: var(--pixel-bg);
+  border: 2px solid #1c2836;
+}
+
+/* ---------- dot indicators ---------- */
+
+.pixel-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+}
+
+.pixel-dot-ok {
+  background: var(--pixel-green);
+  animation: pixel-blink 1.4s steps(1) infinite;
+}
+
+.pixel-dot-busy {
+  background: var(--pixel-yellow);
+  animation: pixel-blink 0.4s steps(1) infinite;
+}
+
+@keyframes pixel-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.25; }
+}
+
+.animate-pixel-blink {
+  animation: pixel-blink 1.2s steps(1) infinite;
+}
+
+/* ---------- upload slot ---------- */
+
+.pixel-slot {
+  background: #05070a80;
+  border: var(--pixel-border) dashed #1e2c3d;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.pixel-slot:hover {
+  border-color: var(--pixel-cyan);
+}
+
+.pixel-slot-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid var(--pixel-cyan);
+  background: #00ffcc14;
+}
+
+/* ---------- image viewport + reticle brackets ---------- */
+
+.pixel-screen {
+  background: #000;
+  border: var(--pixel-border) solid #1c2836;
+  overflow: hidden;
+}
+
+.pixel-corner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  z-index: 2;
+  border-color: var(--pixel-cyan);
+  border-style: solid;
+  border-width: 0;
+}
+
+.pixel-corner-tl { top: 8px; left: 8px; border-top-width: 4px; border-left-width: 4px; }
+.pixel-corner-tr { top: 8px; right: 8px; border-top-width: 4px; border-right-width: 4px; }
+.pixel-corner-bl { bottom: 8px; left: 8px; border-bottom-width: 4px; border-left-width: 4px; }
+.pixel-corner-br { bottom: 8px; right: 8px; border-bottom-width: 4px; border-right-width: 4px; }
+
+/* ---------- buttons ---------- */
+
+.pixel-btn {
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.8) !important;
+  transition: transform 0.08s steps(2), box-shadow 0.08s steps(2) !important;
+}
+
+.pixel-btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.8) !important;
+}
+
+.pixel-chip {
+  border-radius: 0 !important;
+}
+
+/* ---------- HUD sidebar ---------- */
+
+.pixel-hud {
+  background: var(--pixel-surface);
+  border: 2px solid #1c2836;
+  clip-path: polygon(
+    0 var(--pixel-cut), var(--pixel-cut) var(--pixel-cut), var(--pixel-cut) 0,
+    100% 0, 100% calc(100% - var(--pixel-cut)), calc(100% - var(--pixel-cut)) calc(100% - var(--pixel-cut)),
+    calc(100% - var(--pixel-cut)) 100%, 0 100%
+  );
+}
+
+.pixel-hr {
+  border-bottom: 2px solid #1c2836;
+}
+
+.pixel-hr-dashed {
+  border-bottom: 2px dashed var(--pixel-cyan);
+}
+
+.pixel-divider {
+  border-color: #1c2836 !important;
+}
+
+.pixel-stat {
+  background: var(--pixel-bg);
+  border: 2px solid #1c2836;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.pixel-step {
+  padding: 0.4rem 0.6rem;
+  border: 2px solid #1c2836;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pixel-step-done {
+  border-color: var(--pixel-green);
+  background: #00ff661a;
+  color: var(--pixel-green);
+}
+
+.pixel-step-done .inline-icon {
+  flex-shrink: 0;
+}
+
+.pixel-detect-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.6rem;
+  background: var(--pixel-bg);
+  border: 2px solid;
+}
+
+.pixel-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.pixel-scroll::-webkit-scrollbar-track {
+  background: var(--pixel-bg);
+}
+.pixel-scroll::-webkit-scrollbar-thumb {
+  background: var(--pixel-cyan);
+  border: 2px solid var(--pixel-surface);
+}
+
+.pixel-icon-box {
+  padding: 0.5rem;
+  border: 2px solid;
+}
+
+.pixel-skeleton {
+  border-radius: 0 !important;
+  background: repeating-linear-gradient(90deg, #10182380 0 8px, #1c283680 8px 16px) !important;
+}
+
+/* ---------- segmented HP-bar style meter ---------- */
+
+.pixel-meter {
+  display: flex;
+  gap: 2px;
+}
+
+.pixel-meter-seg {
+  width: 8%;
+  height: 10px;
+  border: 1px solid;
+  box-sizing: border-box;
+}
+
+/* ---------- 8-point pixel loading ring ---------- */
+
+.pixel-loader-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pixel-ring {
+  position: relative;
+  width: 56px;
+  height: 56px;
+}
+
+.pixel-ring span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: var(--pixel-cyan);
+  transform:
+    rotate(calc(var(--i) * 45deg))
+    translate(24px)
+    rotate(calc(var(--i) * -45deg));
+  animation: pixel-ring-fade 1s steps(1) infinite;
+  animation-delay: calc(var(--i) * -0.125s);
+}
+
+@keyframes pixel-ring-fade {
+  0%, 12.5% { opacity: 1; }
+  13%, 100% { opacity: 0.15; }
+}
+
+/* ---------- headline treatment ---------- */
+
+.pixel-title-shadow {
+  text-shadow:
+    4px 4px 0 #00ffcc,
+    8px 8px 0 rgba(0, 0, 0, 0.6);
+}
+
+.glitch-hover:hover {
+  animation: pixel-glitch 0.3s steps(2) 2;
+}
+
+@keyframes pixel-glitch {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2px, 2px); }
+  50% { transform: translate(2px, -2px); }
+  75% { transform: translate(-2px, -2px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-root,
+  .animate-pixel-blink,
+  .pixel-dot-ok,
+  .pixel-dot-busy,
+  .pixel-ring span,
+  .glitch-hover:hover {
+    animation: none !important;
+  }
+}
+
+/* ---------- mobile scale-down ---------- */
+
+@media (max-width: 480px) {
+  :root {
+    --pixel-cut: 6px;
+  }
+}

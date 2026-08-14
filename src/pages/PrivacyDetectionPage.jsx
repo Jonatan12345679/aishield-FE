@@ -1,62 +1,117 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  PxlKitSurfaceProvider,
-  PixelContainer,
-  PixelBadge,
-  PixelFileUpload,
-  PixelButton,
-  PixelDivider,
-} from '@pxlkit/ui-kit'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   ArrowRight,
+  Car,
   Download,
+  IdCard,
   Image as ImageIcon,
-  LockKeyhole,
+  QrCode,
+  Receipt,
   RotateCcw,
   ScanLine,
   ShieldCheck,
   Upload,
 } from 'lucide-react'
 
-import Header from '@/components/layout/Header'
-
 import {
-  scanPrivacy,
-  blurPrivacy,
-} from '@/api/privacyApi'
+  PixelCard,
+  PixelButton,
+  PixelBadge,
+  PixelAlert,
+  PixelSection,
+  PixelDivider,
+  PixelSkeleton,
+} from '@pxlkit/ui-kit'
 
-import LoadingScreen from '@/components/LoadingScreen'
+
+import { PxlKitIcon, PixelToast } from '@pxlkit/core'
+
+import { CheckCircle } from '@pxlkit/feedback'
+
+import Header from '@/components/layout/Header'
+import { scanPrivacy, blurPrivacy } from '@/api/privacyApi'
+
+import '@/assets/css/PrivacyDetection.css'
 
 const STATUS = {
   IDLE: 'idle',
   READY: 'ready',
-  PROCESSING: 'processing',
   DONE: 'done',
 }
 
-const THEME = {
-  '--retro-bg': '#020617',
-  '--retro-surface': '#0b1120',
-  '--retro-card': '#111827',
-  '--retro-border': '#1e293b',
-  '--retro-text': '#e2e8f0',
-  '--retro-muted': '#64748b',
-  '--retro-green': '#00ff88',
-  '--retro-red': '#ff0055',
+const DETECTION_META = {
+  ktp: { label: 'KTP', longLabel: 'KTP · IDENTITY CARD', color: '#00ffff', icon: IdCard },
+  qr: { label: 'QR CODE', longLabel: 'QR CODE', color: '#ff00ff', icon: QrCode },
+  plat_nomor: { label: 'PLAT NOMOR', longLabel: 'PLAT NOMOR · VEHICLE PLATE', color: '#ffcc00', icon: Car },
+  struk: { label: 'STRUK', longLabel: 'STRUK · RECEIPT', color: '#00ff66', icon: Receipt },
+}
+
+const CAPABILITIES = [
+  { key: 'ktp', description: 'Identity documents that expose full name, NIK, and address.' },
+  { key: 'qr', description: 'QR codes that can embed sensitive links, payments, or contact data.' },
+  { key: 'plat_nomor', description: 'Vehicle registration plates left visible in the background.' },
+  { key: 'struk', description: 'Receipts and invoices that reveal purchases and account details.' },
+]
+
+function detectionMeta(cls) {
+  return (
+    DETECTION_META[cls] ?? {
+      label: cls.replace(/_/g, ' ').toUpperCase(),
+      longLabel: cls.replace(/_/g, ' ').toUpperCase(),
+      color: '#00ffff',
+      icon: ShieldCheck,
+    }
+  )
+}
+
+const formatConfidence = (value) => `${(value * 100).toFixed(1)}%`
+
+function PixelLoader({ label }) {
+  return (
+    <div className="pixel-loader-wrap">
+      <div className="pixel-ring" role="status" aria-label={label}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <span key={i} style={{ '--i': i }} />
+        ))}
+      </div>
+      <div className="font-pixel-display text-[10px] text-[#00ffcc] tracking-widest animate-pixel-blink">
+        {label}
+      </div>
+    </div>
+  )
+}
+
+function PixelMeter({ value, color }) {
+  const totalSegments = 10
+  const filled = Math.round((value ?? 0) * totalSegments)
+  return (
+    <div className="pixel-meter" aria-hidden="true">
+      {Array.from({ length: totalSegments }).map((_, i) => (
+        <span
+          key={i}
+          className="pixel-meter-seg"
+          style={{ backgroundColor: i < filled ? color : 'transparent', borderColor: color }}
+        />
+      ))}
+    </div>
+  )
 }
 
 export default function PrivacyDetectionPage() {
   const [files, setFiles] = useState([])
   const [status, setStatus] = useState(STATUS.IDLE)
-
   const [previewUrl, setPreviewUrl] = useState(null)
-  const [scanResultUrl, setScanResultUrl] = useState(null)
-  const [blurResultUrl, setBlurResultUrl] = useState(null)
+  const [scanResult, setScanResult] = useState(null)
+  const [blurResult, setBlurResult] = useState(null)
   const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [pendingAction, setPendingAction] = useState(null)
+
+  const workspaceRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   const currentFile = files[0] ?? null
+  const loading = pendingAction !== null
 
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -66,926 +121,419 @@ export default function PrivacyDetectionPage() {
     }
   }, [previewUrl])
 
-  useEffect(() => {
-    return () => {
-      if (scanResultUrl) URL.revokeObjectURL(scanResultUrl)
-    }
-  }, [scanResultUrl])
-
-  useEffect(() => {
-    return () => {
-      if (blurResultUrl) URL.revokeObjectURL(blurResultUrl)
-    }
-  }, [blurResultUrl])
+  const resetResults = useCallback(() => {
+    setScanResult(null)
+    setBlurResult(null)
+    setError(null)
+  }, [])
 
   const handleFilesChange = useCallback(
-    (nextFiles) => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl)
-      }
-
-      if (scanResultUrl) {
-        URL.revokeObjectURL(scanResultUrl)
-      }
-
-      if (blurResultUrl) {
-        URL.revokeObjectURL(blurResultUrl)
-      }
-
+    (e) => {
+      const nextFiles = Array.from(e.target.files || [])
+      if (!nextFiles.length) return
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
       setFiles(nextFiles)
-
-      setScanResultUrl(null)
-      setBlurResultUrl(null)
-      setError(null)
-
+      resetResults()
       if (nextFiles.length) {
-        const file = nextFiles[0]
-        const url = URL.createObjectURL(file)
-
-        setPreviewUrl(url)
+        setPreviewUrl(URL.createObjectURL(nextFiles[0]))
         setStatus(STATUS.READY)
       } else {
         setPreviewUrl(null)
         setStatus(STATUS.IDLE)
       }
     },
-    [previewUrl, scanResultUrl, blurResultUrl]
+    [previewUrl, resetResults]
   )
 
   const handleDetection = useCallback(async () => {
-    if (!currentFile || loading) {
-      return
-    }
-
+    if (!currentFile || loading) return
     try {
-      setLoading(true)
+      setPendingAction('scan')
       setError(null)
-
       const start = Date.now()
-
       const result = await scanPrivacy(currentFile)
-
       const elapsed = Date.now() - start
-
-      if (elapsed < 2000) {
-        await delay(2000 - elapsed)
-      }
-
-      if (scanResultUrl) {
-        URL.revokeObjectURL(scanResultUrl)
-      }
-
-      setScanResultUrl(result.image)
-
+      if (elapsed < 1200) await delay(1200 - elapsed)
+      setScanResult(result)
       setStatus(STATUS.DONE)
-    } catch (error) {
-      console.error('Privacy scan error:', error)
-
-      setError(
-        error.message ||
-        'Gagal melakukan privacy detection.'
-      )
-
+    } catch (err) {
+      setError(err.message || 'Gagal melakukan privacy detection.')
       setStatus(STATUS.READY)
     } finally {
-      setLoading(false)
+      setPendingAction(null)
     }
-  }, [currentFile, loading, scanResultUrl])
+  }, [currentFile, loading])
 
   const handleBlur = useCallback(async () => {
-    if (!currentFile || loading) {
-      return
-    }
-
+    if (!currentFile || loading) return
     try {
-      setLoading(true)
+      setPendingAction('blur')
       setError(null)
-
       const start = Date.now()
-
       const result = await blurPrivacy(currentFile)
-
       const elapsed = Date.now() - start
-
-      if (elapsed < 2000) {
-        await delay(2000 - elapsed)
-      }
-
-      if (blurResultUrl) {
-        URL.revokeObjectURL(blurResultUrl)
-      }
-
-      setBlurResultUrl(result.image)
-
+      if (elapsed < 1200) await delay(1200 - elapsed)
+      setBlurResult(result)
       setStatus(STATUS.DONE)
-    } catch (error) {
-      console.error('Privacy blur error:', error)
-
-      setError(
-        error.message ||
-        'Gagal melakukan privacy blur.'
-      )
-
+    } catch (err) {
+      setError(err.message || 'Gagal melakukan privacy blur.')
       setStatus(STATUS.READY)
     } finally {
-      setLoading(false)
+      setPendingAction(null)
     }
-  }, [currentFile, loading, blurResultUrl])
+  }, [currentFile, loading])
+
+  const handleDownload = useCallback(() => {
+    if (!blurResult?.image || !currentFile) return
+    const link = document.createElement('a')
+    link.href = blurResult.image
+    link.download = `privacy-protected-${currentFile.name}`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }, [blurResult, currentFile])
 
   const reset = useCallback(() => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl)
-    }
-
-    if (scanResultUrl) {
-      URL.revokeObjectURL(scanResultUrl)
-    }
-
-    if (blurResultUrl) {
-      URL.revokeObjectURL(blurResultUrl)
-    }
-
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
     setFiles([])
     setPreviewUrl(null)
-    setScanResultUrl(null)
-    setBlurResultUrl(null)
-    setError(null)
+    resetResults()
     setStatus(STATUS.IDLE)
-  }, [previewUrl, scanResultUrl, blurResultUrl])
+  }, [previewUrl, resetResults])
 
-  const statistics = useMemo(() => {
-    return {
-      detected: scanResultUrl ? 1 : 0,
-      confidence: scanResultUrl ? 100 : 0,
-    }
-  }, [scanResultUrl])
+  const triggerSelectFile = () => fileInputRef.current?.click()
+  const scrollToUpload = useCallback(() => {
+    workspaceRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    window.requestAnimationFrame(() => fileInputRef.current?.click())
+  }, [])
+
+  const detections = scanResult?.detections ?? []
+  const avgConfidence = useMemo(() => {
+    if (!detections.length) return null
+    const sum = detections.reduce((acc, d) => acc + d.confidence, 0)
+    return sum / detections.length
+  }, [detections])
+
+  const activeStep = blurResult ? 3 : scanResult ? 2 : currentFile ? 1 : 0
+  const displayedImage = blurResult?.image || scanResult?.image || previewUrl
 
   return (
-    <div
-      className="dark min-h-screen bg-slate-950"
-      style={THEME}
-    >
-      <PxlKitSurfaceProvider surface="pixel">
-        {/* Header */}
-        <Header />
+    <div className="min-h-screen bg-[#05070a] text-slate-200 selection:bg-[#00ffcc] selection:text-[#05070a] relative pixel-root">
+      <div className="fixed inset-0 pixel-dither pointer-events-none z-0" />
+      <div className="fixed inset-0 scanline-bg pointer-events-none z-50" />
 
-        <main>
-          {/* Hero */}
-          <section className="relative overflow-hidden">
-            <div className="pointer-events-none absolute inset-0">
-              <div className="absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full bg-cyan-500/5 blur-[120px]" />
+      <Header className="relative z-10" />
 
-              <div className="absolute -left-32 top-40 h-[350px] w-[350px] rounded-full bg-emerald-500/5 blur-[100px]" />
+      <PixelToast
+        visible={!!error}
+        title="ERROR"
+        message={error || ''}
+        position="top-right"
+        duration={4000}
+      />
 
-              <div
-                className="
-                  absolute inset-0
-                  opacity-[0.025]
-                  [background-image:linear-gradient(rgba(255,255,255,.5)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.5)_1px,transparent_1px)]
-                  [background-size:64px_64px]
-                "
-              />
+      <main className="relative z-10 max-w-7xl mx-auto px-4 py-8">
+        {/* HERO */}
+        <section className="py-12 mb-16 text-center">
+          <div className="pixel-frame inline-block mb-8 pixel-accent-cyan">
+            <div className="pixel-frame-inner px-4 py-1.5">
+              <span className="font-pixel-display text-[10px] text-[#00ffcc] animate-pixel-blink">
+                ▸ SYSTEM v2.0 READY ◂
+              </span>
             </div>
+          </div>
 
-            <PixelContainer className="relative pb-14 pt-16 sm:pb-20 sm:pt-24">
-              <div className="max-w-4xl">
-                <div className="flex flex-wrap items-center gap-3">
-                  <PixelBadge tone="green">
-                    PRIVACY ENGINE
-                  </PixelBadge>
+          <h1 className="font-pixel-display text-3xl sm:text-4xl lg:text-5xl uppercase mb-6 text-white pixel-title-shadow glitch-hover leading-relaxed">
+            PRIVACY<br className="sm:hidden" /> <span className="text-[#00ffcc]">SCANNER</span>
+          </h1>
 
-                  <span className="font-mono text-[9px] tracking-[0.2em] text-slate-600">
-                    AI-POWERED IMAGE PROTECTION
-                  </span>
-                </div>
+          <p className="font-pixel-body text-xl text-slate-400 max-w-2xl mx-auto mb-8">
+            &gt; DETECT SENSITIVE DATA. PROTECT YOUR IMAGES. PURE PIXEL POWER._
+          </p>
 
-                <h1 className="mt-7 font-pixel text-4xl leading-[1.15] text-slate-100 sm:text-6xl lg:text-7xl">
-                  Your image.
-                  <br />
+          <div className="flex flex-wrap justify-center gap-3 max-w-xl mx-auto">
+            {Object.entries(DETECTION_META).map(([key, meta]) => {
+              const Icon = meta.icon
+              return (
+                <PixelBadge
+                  key={key}
+                  className="pixel-chip flex items-center gap-2 cursor-default font-pixel-display text-[9px]"
+                  style={{ backgroundColor: '#0d131d', color: meta.color, boxShadow: `4px 4px 0 0 ${meta.color}` }}
+                >
+                  <Icon size={12} />
+                  <span>{meta.label}</span>
+                </PixelBadge>
+              )
+            })}
+          </div>
+        </section>
 
-                  <span className="text-cyan-400">
-                    Your privacy.
-                  </span>
-                </h1>
-
-                <p className="mt-7 max-w-2xl font-mono text-xs leading-6 text-slate-500 sm:text-sm">
-                  Detect sensitive information inside an image,
-                  identify what needs protection, and automatically
-                  prepare it for safe sharing.
-                </p>
-
-                <div className="mt-8 flex flex-wrap items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_#00ff88]" />
-
-                    <span className="font-mono text-[9px] tracking-wider text-emerald-400">
-                      DETECTION ENGINE READY
-                    </span>
-                  </div>
-
-                  <span className="text-slate-800">
-                    /
-                  </span>
-
-                  <span className="font-mono text-[9px] text-slate-600">
-                    KTP · QR · PLATE · STRUK
-                  </span>
-                </div>
-              </div>
-            </PixelContainer>
-          </section>
-
-          {/* Scanner */}
-          <PixelContainer className="pb-20">
-            <div className="overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl shadow-black/30">
-              {/* Workspace Header */}
-              <div className="flex flex-col gap-4 border-b border-slate-800 bg-slate-900/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* WORKSPACE */}
+        <div ref={workspaceRef} className="mb-20">
+          <div className="pixel-frame pixel-accent-cyan">
+            <div className="pixel-frame-inner">
+              <div className="pixel-titlebar">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center border border-cyan-500/20 bg-cyan-500/5">
-                    <ScanLine
-                      size={17}
-                      className="text-cyan-400"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="font-mono text-xs font-bold tracking-wider text-slate-200">
-                      PRIVACY SCANNER
-                    </div>
-
-                    <div className="mt-0.5 font-mono text-[9px] text-slate-600">
-                      IMAGE ANALYSIS WORKSPACE
-                    </div>
-                  </div>
+                  <ScanLine size={18} className="text-[#00ffcc]" />
+                  <span className="font-pixel-display text-[10px] tracking-widest uppercase">WORK_SPACE.EXE</span>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`h-1.5 w-1.5 rounded-full ${
-                      loading
-                        ? 'animate-pulse bg-amber-400'
-                        : 'bg-emerald-400'
-                    }`}
-                  />
-
-                  <span
-                    className={`font-mono text-[9px] tracking-widest ${
-                      loading
-                        ? 'text-amber-400'
-                        : 'text-emerald-400'
-                    }`}
-                  >
-                    {loading
-                      ? 'PROCESSING'
-                      : 'ENGINE ONLINE'}
-                  </span>
+                <div className="font-pixel-body text-sm flex items-center gap-2">
+                  <span className={`pixel-dot ${loading ? 'pixel-dot-busy' : 'pixel-dot-ok'}`} />
+                  <span>{loading ? 'PROCESSING...' : 'ENGINE ONLINE'}</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px]">
-                <div className="min-w-0 border-b border-slate-800 lg:border-b-0 lg:border-r">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 sm:p-8">
+                {/* LEFT: VIEWPORT */}
+                <div className="lg:col-span-8 flex flex-col justify-center">
                   {!currentFile ? (
-                    <div className="flex min-h-[540px] items-center justify-center p-6 sm:p-10">
-                      <div className="w-full max-w-xl">
-                        <div className="mb-7 text-center">
-                          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center border border-cyan-500/20 bg-cyan-500/5">
-                            <ImageIcon
-                              size={25}
-                              className="text-cyan-400"
-                            />
-                          </div>
+                    <button
+                      type="button"
+                      onClick={triggerSelectFile}
+                      className="pixel-slot w-full min-h-[380px] flex flex-col items-center justify-center text-center group"
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg"
+                        onChange={handleFilesChange}
+                        className="hidden"
+                      />
+                      <div className="pixel-slot-icon mb-6 group-hover:-translate-y-1 transition-transform">
+                        <ImageIcon size={28} className="text-[#00ffcc]" />
+                      </div>
+                      <h3 className="font-pixel-display text-xs mb-3 text-white">
+                        &gt; INSERT IMAGE CARTRIDGE &lt;
+                      </h3>
+                      <p className="font-pixel-body text-slate-400 mb-6 text-lg">PNG · JPG · JPEG — MAX 10MB</p>
+                      <PixelButton tone="cyan" size="sm" iconLeft={<Upload size={14} />}>
+                        BROWSE FILE
+                      </PixelButton>
+                    </button>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center pixel-strip px-3 py-2">
+                        <span className="font-pixel-body text-lg truncate text-slate-300 max-w-[250px] sm:max-w-md">
+                          FILE: {currentFile.name}
+                        </span>
+                        <PixelButton
+                          onClick={reset}
+                          tone="red"
+                          size="sm"
+                          className="text-[9px] py-1 px-2 font-pixel-display"
+                          iconLeft={<RotateCcw size={12} />}
+                        >
+                          CLEAR
+                        </PixelButton>
+                      </div>
 
-                          <h2 className="font-mono text-sm font-bold tracking-wider text-slate-200">
-                            DROP YOUR IMAGE
-                          </h2>
-
-                          <p className="mx-auto mt-2 max-w-sm font-mono text-[10px] leading-5 text-slate-600">
-                            Upload an image and let the AI identify
-                            privacy-sensitive information automatically.
-                          </p>
-                        </div>
-
-                        <PixelFileUpload
-                          label="Upload Image"
-                          hint="PNG · JPG · JPEG · MAX 10 MB"
-                          value={files}
-                          onChange={handleFilesChange}
-                          accept="image/png,image/jpeg,image/jpg"
-                          maxFiles={1}
-                          maxSize={10 * 1024 * 1024}
-                          tone="green"
+                      <div className="relative pixel-screen min-h-[320px] max-h-[500px] flex items-center justify-center">
+                        <span className="pixel-corner pixel-corner-tl" />
+                        <span className="pixel-corner pixel-corner-tr" />
+                        <span className="pixel-corner pixel-corner-bl" />
+                        <span className="pixel-corner pixel-corner-br" />
+                        <img
+                          src={displayedImage}
+                          alt="Preview"
+                          className="max-h-[480px] w-auto object-contain pixel-render"
                         />
+                        {loading && (
+                          <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-4">
+                            <PixelLoader label={pendingAction === 'blur' ? '> BLURRING DATA...' : '> SCANNING PIXELS...'} />
+                          </div>
+                        )}
+                      </div>
 
-                        <div className="mt-5 flex items-center justify-center gap-2">
-                          <ShieldCheck
-                            size={12}
-                            className="text-slate-600"
-                          />
-
-                          <span className="font-mono text-[8px] text-slate-600">
-                            IMAGE ENTERS THE PROTECTION PIPELINE
+                      <div className="flex flex-wrap gap-4 justify-between items-center pt-2">
+                        <div className="font-pixel-display text-[10px] uppercase">
+                          STATUS:{' '}
+                          <span className="text-[#00ff66] animate-pixel-blink">
+                            {blurResult ? '[PROTECTED]' : scanResult ? '[DETECTED]' : '[READY]'}
                           </span>
                         </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-4 sm:p-6">
-                      {/* Image toolbar */}
-                      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="min-w-0">
-                          <div className="font-mono text-[8px] tracking-[0.2em] text-slate-600">
-                            SOURCE IMAGE
-                          </div>
-
-                          <div className="mt-1 truncate font-mono text-xs text-slate-300">
-                            {currentFile.name}
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={reset}
-                          className="flex shrink-0 items-center gap-2 self-start border border-slate-800 px-3 py-2 font-mono text-[8px] tracking-wider text-slate-500 transition hover:border-slate-600 hover:text-slate-200"
-                        >
-                          <RotateCcw size={12} />
-                          REPLACE
-                        </button>
-                      </div>
-
-                      <div className="relative overflow-hidden border border-slate-800 bg-black">
-                        <div className="relative aspect-[16/10] w-full">
-                          <img
-                            src={previewUrl}
-                            alt="Uploaded source"
-                            className="absolute inset-0 h-full w-full object-contain"
-                          />
-
-                          {scanResultUrl && (
-                            <img
-                              src={scanResultUrl}
-                              alt="Privacy detection result"
-                              className="absolute inset-0 h-full w-full object-contain"
-                            />
-                          )}
-
-                          {blurResultUrl && (
-                            <img
-                              src={blurResultUrl}
-                              alt="Privacy blurred result"
-                              className="absolute inset-0 h-full w-full object-contain"
-                            />
-                          )}
-
-                          {/* Processing overlay */}
-                          {loading && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm">
-                              <div className="text-center">
-                                <div className="mx-auto h-10 w-10 animate-spin border-2 border-slate-700 border-t-cyan-400" />
-
-                                <div className="mt-5 font-mono text-[10px] font-bold tracking-[0.2em] text-cyan-400">
-                                  ANALYZING IMAGE
-                                </div>
-
-                                <div className="mt-2 font-mono text-[8px] text-slate-600">
-                                  AI DETECTING SENSITIVE ENTITIES
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-center gap-3">
-                          <PixelBadge
-                            tone={
-                              blurResultUrl
-                                ? 'green'
-                                : scanResultUrl
-                                  ? 'green'
-                                  : 'neutral'
-                            }
-                          >
-                            {blurResultUrl
-                              ? 'PROTECTED'
-                              : scanResultUrl
-                                ? 'DETECTED'
-                                : 'READY TO SCAN'}
-                          </PixelBadge>
-
-                          {scanResultUrl && (
-                            <span className="font-mono text-[9px] text-emerald-400">
-                              Privacy regions identified
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2">
-                          {!scanResultUrl && (
+                        <div className="flex gap-3">
+                          {!scanResult && (
                             <PixelButton
-                              tone="green"
-                              disabled={
-                                !currentFile ||
-                                loading
-                              }
-                              loading={
-                                loading
-                              }
+                              disabled={loading}
                               onClick={handleDetection}
+                              tone="cyan"
+                              size="sm"
+                              className="font-pixel-display text-[9px]"
+                              iconLeft={<ScanLine size={14} />}
                             >
-                              <ScanLine size={14} />
-
-                              {loading
-                                ? 'SCANNING...'
-                                : 'DETECT PRIVACY'}
+                              DETECT
                             </PixelButton>
                           )}
-
-                          {scanResultUrl && !blurResultUrl && (
+                          {scanResult && !blurResult && (
                             <PixelButton
-                              tone="green"
-                              disabled={
-                                loading
-                              }
-                              loading={
-                                loading
-                              }
+                              disabled={loading}
                               onClick={handleBlur}
+                              tone="green"
+                              size="sm"
+                              className="font-pixel-display text-[9px]"
+                              iconLeft={<ShieldCheck size={14} />}
                             >
-                              <ShieldCheck size={14} />
-
-                              {loading
-                                ? 'PROTECTING...'
-                                : 'BLUR PRIVACY'}
+                              BLUR PRIVACY
                             </PixelButton>
                           )}
-
-                          {blurResultUrl && (
-                            <a
-                              href={blurResultUrl}
-                              download={`privacy-protected-${currentFile.name}`}
-                              className="flex items-center gap-2 border border-emerald-500/30 bg-emerald-500/5 px-4 py-2 font-mono text-[9px] font-bold tracking-wider text-emerald-400 transition hover:border-emerald-400 hover:bg-emerald-500/10"
+                          {blurResult && (
+                            <PixelButton
+                              onClick={handleDownload}
+                              tone="green"
+                              size="sm"
+                              className="font-pixel-display text-[9px]"
+                              iconLeft={<Download size={14} />}
                             >
-                              <Download size={13} />
                               DOWNLOAD
-                            </a>
+                            </PixelButton>
                           )}
                         </div>
                       </div>
 
-                      {/* Error */}
                       {error && (
-                        <div className="mt-4 border border-rose-500/20 bg-rose-500/5 p-3">
-                          <div className="font-mono text-[9px] font-bold text-rose-400">
-                            PRIVACY ENGINE ERROR
+                        <PixelAlert className="pixel-frame pixel-accent-red mt-4">
+                          <div className="pixel-frame-inner flex justify-between items-center px-3 py-2">
+                            <span className="font-pixel-body text-lg text-red-300">ERR: {error}</span>
+                            <PixelButton
+                              onClick={scanResult ? handleBlur : handleDetection}
+                              tone="red"
+                              size="sm"
+                              className="font-pixel-display text-[9px]"
+                            >
+                              RETRY
+                            </PixelButton>
                           </div>
-
-                          <div className="mt-1 font-mono text-[8px] leading-5 text-rose-300/70">
-                            {error}
-                          </div>
-                        </div>
+                        </PixelAlert>
                       )}
                     </div>
                   )}
                 </div>
 
-                <aside className="bg-slate-950/70">
-                  <div className="border-b border-slate-800 px-5 py-4">
-                    <div className="font-mono text-[8px] tracking-[0.2em] text-slate-600">
-                      ANALYSIS
+                {/* RIGHT: HUD SIDEBAR */}
+                <div className="lg:col-span-4">
+                  <div className="pixel-hud h-full flex flex-col justify-between p-4">
+                    <div>
+                      <h2 className="font-pixel-display text-[10px] tracking-widest text-slate-400 pb-3 mb-4 pixel-hr">
+                        [ ANALYSIS HUD ]
+                      </h2>
+
+                      <div className="grid grid-cols-2 gap-3 mb-6">
+                        <div className="pixel-stat">
+                          <div className="font-pixel-body text-slate-500 text-sm">FOUND</div>
+                          <div className="font-pixel-display text-lg text-white">
+                            {detections.length ? detections.length : '0'}
+                          </div>
+                        </div>
+                        <div className="pixel-stat">
+                          <div className="font-pixel-body text-slate-500 text-sm">AVG CONF</div>
+                          <div className="font-pixel-display text-lg text-[#00ff66] mb-1">
+                            {avgConfidence !== null ? formatConfidence(avgConfidence) : '0%'}
+                          </div>
+                          <PixelMeter value={avgConfidence ?? 0} color="#00ff66" />
+                        </div>
+                      </div>
+
+                      <PixelDivider className="pixel-divider mb-6" />
+
+                      <div className="mb-6">
+                        <div className="font-pixel-display text-[9px] text-slate-500 mb-2 tracking-widest">PROGRESS:</div>
+                        {loading ? (
+                          <PixelSkeleton className="pixel-skeleton h-24 w-full" />
+                        ) : (
+                          <div className="space-y-2">
+                            {['1. SELECT FILE', '2. SCAN PRIVACY', '3. BLUR & PROTECT'].map((step, idx) => (
+                              <div
+                                key={step}
+                                className={`pixel-step font-pixel-body text-lg ${activeStep > idx ? 'pixel-step-done' : ''}`}
+                              >
+                                {activeStep > idx ? (
+                                  <PxlKitIcon icon={CheckCircle} size={18} appearance="solid" color="#00ff66" />
+                                ) : null}
+                                {step}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {detections.length > 0 && (
+                        <div>
+                          <div className="font-pixel-display text-[9px] text-[#00ffcc] mb-2 pixel-hr-dashed pb-1 tracking-widest">
+                            DETECTED CLASSES:
+                          </div>
+                          <div className="space-y-2 max-h-48 overflow-y-auto pixel-scroll">
+                            {detections.map((detection, index) => {
+                              const meta = detectionMeta(detection.class)
+                              const Icon = meta.icon
+                              return (
+                                <div
+                                  key={`${detection.class}-${index}`}
+                                  className="pixel-detect-row"
+                                  style={{ borderColor: meta.color }}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <Icon size={14} style={{ color: meta.color }} />
+                                    <span className="font-pixel-display text-[9px] text-white uppercase">{meta.label}</span>
+                                  </div>
+                                  <span className="font-pixel-body text-lg" style={{ color: meta.color }}>
+                                    {formatConfidence(detection.confidence)}
+                                  </span>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="mt-1 font-mono text-sm text-slate-200">
-                      Detection Results
+                    <div className="mt-6 pixel-hr pt-4 font-pixel-body text-lg text-slate-500">
+                      {blurResult ? (
+                        <span className="text-[#00ff66]">&gt; STATUS: PROTECTED &amp; READY</span>
+                      ) : scanResult ? (
+                        <span className="text-[#00ffcc]">&gt; STATUS: REGIONS IDENTIFIED</span>
+                      ) : (
+                        <span className="animate-pixel-blink">&gt; AWAITING INPUT... _</span>
+                      )}
                     </div>
                   </div>
-
-                  <div className="p-5">
-                    {/* Statistics */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <AnalysisStat
-                        label="SCAN"
-                        value={
-                          scanResultUrl
-                            ? 'DONE'
-                            : '--'
-                        }
-                      />
-
-                      <AnalysisStat
-                        label="PROTECTION"
-                        value={
-                          blurResultUrl
-                            ? 'DONE'
-                            : '--'
-                        }
-                      />
-                    </div>
-
-                    {/* Pipeline */}
-                    <div className="mt-8">
-                      <div className="mb-3 font-mono text-[8px] tracking-[0.2em] text-slate-600">
-                        PROTECTION PIPELINE
-                      </div>
-
-                      <div className="space-y-2">
-                        {/* STEP 01 */}
-                        <div
-                          className={`border p-3 ${
-                            currentFile
-                              ? 'border-cyan-500/20 bg-cyan-500/5'
-                              : 'border-slate-800'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="font-mono text-[9px] text-cyan-400">
-                              01
-                            </div>
-
-                            <div className="flex-1">
-                              <div className="font-mono text-[9px] font-bold text-slate-200">
-                                IMAGE UPLOAD
-                              </div>
-
-                              <div className="mt-1 font-mono text-[8px] text-slate-600">
-                                Source image loaded
-                              </div>
-                            </div>
-
-                            {currentFile && (
-                              <span className="text-emerald-400">
-                                ✓
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* STEP 02 */}
-                        <div
-                          className={`border p-3 ${
-                            scanResultUrl
-                              ? 'border-cyan-500/20 bg-cyan-500/5'
-                              : 'border-slate-800'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="font-mono text-[9px] text-cyan-400">
-                              02
-                            </div>
-
-                            <div className="flex-1">
-                              <div className="font-mono text-[9px] font-bold text-slate-200">
-                                AI DETECTION
-                              </div>
-
-                              <div className="mt-1 font-mono text-[8px] text-slate-600">
-                                Locate sensitive regions
-                              </div>
-                            </div>
-
-                            {scanResultUrl && (
-                              <span className="text-emerald-400">
-                                ✓
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* STEP 03 */}
-                        <div
-                          className={`border p-3 ${
-                            blurResultUrl
-                              ? 'border-emerald-500/20 bg-emerald-500/5'
-                              : 'border-slate-800'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="font-mono text-[9px] text-emerald-400">
-                              03
-                            </div>
-
-                            <div className="flex-1">
-                              <div className="font-mono text-[9px] font-bold text-slate-200">
-                                PRIVACY PROTECTION
-                              </div>
-
-                              <div className="mt-1 font-mono text-[8px] text-slate-600">
-                                Blur sensitive information
-                              </div>
-                            </div>
-
-                            {blurResultUrl && (
-                              <span className="text-emerald-400">
-                                ✓
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Result */}
-                    <div className="mt-8">
-                      <PixelDivider
-                        label="RESULT"
-                        tone="green"
-                        spacing="sm"
-                      />
-
-                      {!scanResultUrl && !blurResultUrl && (
-                        <div className="mt-4 border border-dashed border-slate-800 p-5">
-                          <div className="font-mono text-[9px] leading-5 text-slate-600">
-                            Waiting for analysis.
-                            <br />
-                            Detection results will appear here.
-                          </div>
-                        </div>
-                      )}
-
-                      {scanResultUrl && !blurResultUrl && (
-                        <div className="mt-4 border border-cyan-500/20 bg-cyan-500/5 p-4">
-                          <div className="flex items-start gap-3">
-                            <ScanLine
-                              size={15}
-                              className="mt-0.5 text-cyan-400"
-                            />
-
-                            <div>
-                              <div className="font-mono text-[9px] font-bold text-cyan-400">
-                                PRIVACY DETECTED
-                              </div>
-
-                              <div className="mt-2 font-mono text-[8px] leading-5 text-slate-500">
-                                Sensitive regions have been identified.
-                                Continue to protection to blur the
-                                detected privacy information.
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {blurResultUrl && (
-                        <div className="mt-4 border border-emerald-500/20 bg-emerald-500/5 p-4">
-                          <div className="flex items-start gap-3">
-                            <ShieldCheck
-                              size={15}
-                              className="mt-0.5 text-emerald-400"
-                            />
-
-                            <div>
-                              <div className="font-mono text-[9px] font-bold text-emerald-400">
-                                IMAGE PROTECTED
-                              </div>
-
-                              <div className="mt-2 font-mono text-[8px] leading-5 text-slate-500">
-                                Privacy-sensitive information has been
-                                automatically blurred and the image is
-                                ready to be shared.
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Download */}
-                    {blurResultUrl && (
-                      <div className="mt-6">
-                        <a
-                          href={blurResultUrl}
-                          download={`privacy-protected-${currentFile.name}`}
-                          className="flex w-full items-center justify-between border border-emerald-500/20 bg-emerald-500/5 p-4 text-left transition hover:border-emerald-400/40 hover:bg-emerald-500/10"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-8 w-8 items-center justify-center border border-emerald-500/20">
-                              <Download
-                                size={14}
-                                className="text-emerald-400"
-                              />
-                            </div>
-
-                            <div>
-                              <div className="font-mono text-[10px] font-bold text-slate-200">
-                                DOWNLOAD PROTECTED IMAGE
-                              </div>
-
-                              <div className="mt-1 font-mono text-[8px] text-slate-600">
-                                Ready for safe sharing
-                              </div>
-                            </div>
-                          </div>
-
-                          <ArrowRight
-                            size={14}
-                            className="text-emerald-400"
-                          />
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </aside>
-              </div>
-            </div>
-          </PixelContainer>
-
-          {/* Detection Capabilities */}
-          <PixelContainer className="pb-20">
-            <div className="mb-8 max-w-2xl">
-              <PixelBadge tone="green">
-                DETECTION CAPABILITIES
-              </PixelBadge>
-
-              <h2 className="mt-4 font-pixel text-2xl text-slate-100 sm:text-3xl">
-                What can we
-                <span className="text-cyan-400">
-                  {' '}protect?
-                </span>
-              </h2>
-
-              <p className="mt-3 font-mono text-[10px] leading-5 text-slate-500">
-                AI SHIELD CAN IDENTIFY VISUAL INFORMATION THAT SHOULD
-                NOT BE EXPOSED PUBLICLY.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <ProtectionType
-                number="01"
-                title="KTP"
-                tag="IDENTITY"
-                description="Identity documents containing personal information."
-              />
-
-              <ProtectionType
-                number="02"
-                title="QR CODE"
-                tag="CODE"
-                description="QR codes containing potentially sensitive data."
-              />
-
-              <ProtectionType
-                number="03"
-                title="PLAT NOMOR"
-                tag="VEHICLE"
-                description="Vehicle registration information exposed in images."
-              />
-
-              <ProtectionType
-                number="04"
-                title="STRUK BELANJA"
-                tag="FINANCIAL"
-                description="Receipts containing financial information."
-              />
-            </div>
-          </PixelContainer>
-
-          {/* AI Pipeline */}
-          <PixelContainer className="pb-20">
-            <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-              <div className="max-w-2xl">
-                <PixelBadge tone="green">
-                  AI PIPELINE
-                </PixelBadge>
-
-                <h2 className="mt-4 font-pixel text-2xl text-slate-100 sm:text-3xl">
-                  From image to
-                  <span className="text-emerald-400">
-                    {' '}protection.
-                  </span>
-                </h2>
-              </div>
-
-              <div className="font-mono text-[8px] tracking-wider text-slate-600">
-                UPLOAD → DETECT → PROTECT
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-px overflow-hidden border border-slate-800 bg-slate-800 md:grid-cols-3">
-              <AiStep
-                number="01"
-                title="UPLOAD"
-                description="The original image enters the privacy protection pipeline."
-              />
-
-              <AiStep
-                number="02"
-                title="DETECT"
-                description="The AI scans the image and returns visual detection results."
-              />
-
-              <AiStep
-                number="03"
-                title="PROTECT"
-                description="Sensitive regions are automatically blurred and prepared for sharing."
-              />
-            </div>
-          </PixelContainer>
-
-          {/* CTA */}
-          <PixelContainer className="pb-20">
-            <div className="flex flex-col items-start justify-between gap-6 border-y border-slate-800 py-8 sm:flex-row sm:items-center">
-              <div>
-                <div className="font-mono text-[9px] tracking-[0.2em] text-emerald-400">
-                  READY WHEN YOU ARE
                 </div>
-
-                <h3 className="mt-2 font-pixel text-xl text-slate-200">
-                  Protect before you share.
-                </h3>
               </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  document
-                    .querySelector('input[type="file"]')
-                    ?.click()
-                }}
-                className="flex items-center gap-3 border border-cyan-500/30 bg-cyan-500/5 px-5 py-3 font-mono text-[9px] font-bold tracking-wider text-cyan-400 transition hover:border-cyan-400 hover:bg-cyan-500/10"
-              >
-                <Upload size={14} />
-                SCAN AN IMAGE
-                <ArrowRight size={13} />
-              </button>
             </div>
-          </PixelContainer>
-        </main>
-      </PxlKitSurfaceProvider>
-      {loading && (
-      <div className="fixed inset-0 z-50">
-        <LoadingScreen />
-      </div>
-    )}
-    </div>
+          </div>
+        </div>
 
-    
-    
-  )
-}
+        {/* CAPABILITIES */}
+        <PixelSection className="mb-16">
+          <div className="text-center mb-10">
+            <h2 className="font-pixel-display text-lg uppercase text-white mb-3 tracking-widest">
+              &gt; DETECTION CAPABILITIES &lt;
+            </h2>
+            <p className="font-pixel-body text-lg text-slate-400">TARGETED CLASSES · DESTRUCTIVE SCAN</p>
+          </div>
 
-
-function AnalysisStat({ label, value }) {
-  return (
-    <div className="border border-slate-800 bg-slate-900/40 p-3">
-      <div className="font-mono text-[8px] tracking-wider text-slate-600">
-        {label}
-      </div>
-
-      <div className="mt-2 font-mono text-sm font-bold text-slate-200">
-        {value}
-      </div>
-    </div>
-  )
-}
-
-function ProtectionType({
-  number,
-  title,
-  tag,
-  description,
-}) {
-  return (
-    <div className="group border border-slate-800 bg-slate-950 p-5 transition hover:border-cyan-500/30 hover:bg-slate-900/50">
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-[9px] text-cyan-400">
-          {number}
-        </span>
-
-        <span className="font-mono text-[8px] tracking-wider text-slate-600">
-          {tag}
-        </span>
-      </div>
-
-      <h3 className="mt-5 font-pixel text-lg text-slate-200">
-        {title}
-      </h3>
-
-      <p className="mt-3 font-mono text-[9px] leading-5 text-slate-600">
-        {description}
-      </p>
-    </div>
-  )
-}
-
-function AiStep({
-  number,
-  title,
-  description,
-}) {
-  return (
-    <div className="bg-slate-950 p-6">
-      <div className="font-mono text-[9px] tracking-wider text-cyan-400">
-        {number}
-      </div>
-
-      <h3 className="mt-4 font-mono text-xs font-bold tracking-wider text-slate-200">
-        {title}
-      </h3>
-
-      <p className="mt-3 font-mono text-[9px] leading-5 text-slate-600">
-        {description}
-      </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {CAPABILITIES.map(({ key, description }) => {
+              const meta = detectionMeta(key)
+              const Icon = meta.icon
+              return (
+                <div key={key} className="pixel-frame hover:-translate-y-1.5 transition-transform duration-150" style={{ '--accent': meta.color }}>
+                  <div className="pixel-frame-inner p-4 flex flex-col justify-between h-full">
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="pixel-icon-box" style={{ borderColor: meta.color, color: meta.color }}>
+                          <Icon size={18} />
+                        </div>
+                        <h3 className="font-pixel-display text-[10px] text-white uppercase tracking-wider">{meta.label}</h3>
+                      </div>
+                      <p className="font-pixel-body text-lg text-slate-400 leading-relaxed">{description}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </PixelSection>
+      </main>
     </div>
   )
 }
