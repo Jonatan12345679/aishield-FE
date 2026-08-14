@@ -32,7 +32,7 @@ import { CheckCircle } from '@pxlkit/feedback'
 import Header from '@/components/layout/Header'
 import { scanPrivacy, blurPrivacy } from '@/api/privacyApi'
 
-import '@/assets/css/PrivacyDetection.css'
+import '@/assets/styles/BlurAiPage.css'
 
 const STATUS = {
   IDLE: 'idle',
@@ -98,7 +98,7 @@ function PixelMeter({ value, color }) {
   )
 }
 
-export default function PrivacyDetectionPage() {
+export default function BlurAiPage() {
   const [files, setFiles] = useState([])
   const [status, setStatus] = useState(STATUS.IDLE)
   const [previewUrl, setPreviewUrl] = useState(null)
@@ -238,13 +238,17 @@ export default function PrivacyDetectionPage() {
           <div className="pixel-frame inline-block mb-8 pixel-accent-cyan">
             <div className="pixel-frame-inner px-4 py-1.5">
               <span className="font-pixel-display text-[10px] text-[#00ffcc] animate-pixel-blink">
-                ▸ SYSTEM v2.0 READY ◂
+                ▸ SYSTEM READY ◂
               </span>
             </div>
           </div>
 
           <h1 className="font-pixel-display text-3xl sm:text-4xl lg:text-5xl uppercase mb-6 text-white pixel-title-shadow glitch-hover leading-relaxed">
-            PRIVACY<br className="sm:hidden" /> <span className="text-[#00ffcc]">SCANNER</span>
+            BLUR<br className="sm:hidden" /> <span className="text-[#0a4237]">AI</span>
+          </h1>
+
+          <h1 className="font-pixel-display text-xl sm:text-2xl lg:text-3xl uppercase mb-6 text-white pixel-title-shadow glitch-hover leading-relaxed">
+            PRIVACY<br className="sm:hidden" /> SCANNER
           </h1>
 
           <p className="font-pixel-body text-xl text-slate-400 max-w-2xl mx-auto mb-8">

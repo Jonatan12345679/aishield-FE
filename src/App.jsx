@@ -1,17 +1,21 @@
 import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
+import AiShieldPage from "./pages/AiShieldPage";
+import LandingPage from './pages/LandingPage'
 import NotFoundPage from "./pages/NotFoundPage";
-import PrivacyDetectionPage from "./pages/PrivacyDetectionPage";
+import BlurAiPage from "./pages/BlurAiPage";
 
 // import PrivacyDetection from "./pages/PrivacyDetection";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<LandingPage/>} />
+      <Route path="/aishield" 
+      element={<AiShieldPage />}
+       />
       <Route
-        path="/privacy-detection"
-        element={<PrivacyDetectionPage />}
+        path="/blurai"
+        element={<BlurAiPage />}
       />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

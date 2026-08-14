@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { PxlKitIcon } from '@pxlkit/core'
 import { Shield } from '@pxlkit/gamification'
+import icon from '@/assets/img/icon.png'
 import {
   PixelIconFrame,
   PixelBadge,
@@ -60,32 +61,41 @@ export default function Header({ isThreatActive }) {
           : 'bg-slate-900/90 border-slate-700'
       }`}
     >
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
 
         {/* Logo */}
-        <div className="flex items-center gap-3">
-          <PixelIconFrame
-            tone={isThreatActive ? 'red' : 'cyan'}
-            icon={
-              <PxlKitIcon
-                icon={Shield}
-                size={24}
-                appearance="tinted"
-                color={isThreatActive ? '#fb7185' : '#22d3ee'}
-              />
-            }
-          />
+        <Link
+          to="/"
+          onClick={() => setIsMenuOpen(false)}
+          className="group flex items-start gap-3 px-4 py-3 border-b border-slate-800 hover:bg-cyan-950/30 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+          
+            <PixelIconFrame
+              tone={isThreatActive ? 'red' : 'cyan'}
+              icon={
+                <img
+                  src={icon}
+                  alt="Logo"
+                  width={50}
+                  height={50}
+                  className="pixel-render"
+                />
+              }
+            />
 
-          <div>
-            <h1 className="text-xl font-bold tracking-widest text-cyan-400 uppercase">
-              AIShield
-            </h1>
+            <div>
+              <h1 className="text-xl font-bold tracking-widest text-cyan-400 uppercase">
+                Aegis AI
+              </h1>
 
-            <p className="text-[10px] text-slate-500 font-mono tracking-widest">
-              AI-Powered Cyber Defense
-            </p>
+              <p className="text-[10px] text-slate-500 font-mono tracking-widest">
+                detect network anomalies & protect visual privacy
+              </p>
+            </div>
           </div>
-        </div>
+        </Link>
 
         {/* Navigation + Status */}
         <div className="flex items-center gap-4">
@@ -130,7 +140,7 @@ export default function Header({ isThreatActive }) {
 
                 {/* AI Shield */}
                 <Link
-                  to="/"
+                  to="/aishield"
                   onClick={() => setIsMenuOpen(false)}
                   className="group flex items-start gap-3 px-4 py-3 border-b border-slate-800 hover:bg-cyan-950/30 transition-colors"
                 >
@@ -151,7 +161,7 @@ export default function Header({ isThreatActive }) {
 
                 {/* Privacy Detection */}
                 <Link
-                  to="/privacy-detection"
+                  to="/blurai"
                   onClick={() => setIsMenuOpen(false)}
                   className="group flex items-start gap-3 px-4 py-3 hover:bg-cyan-950/30 transition-colors"
                 >
@@ -161,11 +171,11 @@ export default function Header({ isThreatActive }) {
 
                   <div>
                     <div className="text-sm font-bold text-slate-200 group-hover:text-cyan-400">
-                      Privacy Detection
+                      Blur-AI
                     </div>
 
                     <div className="mt-1 text-[10px] text-slate-500 font-mono">
-                      Detect & protect sensitive data
+                      Detect & protect visual privacy
                     </div>
                   </div>
                 </Link>
