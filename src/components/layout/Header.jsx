@@ -78,11 +78,11 @@ export default function Header({ isThreatActive }) {
 
           <div>
             <h1 className="text-xl font-bold tracking-widest text-cyan-400 uppercase">
-              AIShield
+              Aegis AI
             </h1>
 
             <p className="text-[10px] text-slate-500 font-mono tracking-widest">
-              AI-Powered Cyber Defense
+              detect network anomalies & protect visual privacy
             </p>
           </div>
         </div>
@@ -151,7 +151,7 @@ export default function Header({ isThreatActive }) {
 
                 {/* Privacy Detection */}
                 <Link
-                  to="/privacy-detection"
+                  to="/blurai"
                   onClick={() => setIsMenuOpen(false)}
                   className="group flex items-start gap-3 px-4 py-3 hover:bg-cyan-950/30 transition-colors"
                 >
@@ -161,11 +161,11 @@ export default function Header({ isThreatActive }) {
 
                   <div>
                     <div className="text-sm font-bold text-slate-200 group-hover:text-cyan-400">
-                      Privacy Detection
+                      Blur-AI
                     </div>
 
                     <div className="mt-1 text-[10px] text-slate-500 font-mono">
-                      Detect & protect sensitive data
+                      Detect & protect visual privacy
                     </div>
                   </div>
                 </Link>

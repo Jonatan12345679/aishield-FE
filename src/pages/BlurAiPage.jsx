@@ -924,7 +924,6 @@ export default function PrivacyDetectionPage() {
   )
 }
 
-
 function AnalysisStat({ label, value }) {
   return (
     <div className="border border-slate-800 bg-slate-900/40 p-3">
