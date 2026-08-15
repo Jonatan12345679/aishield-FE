@@ -30,7 +30,7 @@ const MODULES = [
     title: 'BLURAI',
     sub: 'PII & SENSITIVE DATA DETECTION',
     desc: 'Computer Vision PII & Object Redaction Powered by YOLO.',
-    cta: 'LAUNCH SCANNER',
+    cta: 'LAUNCH BLURAI',
     href: LINK_BLURAI,
   },
 ]
@@ -41,7 +41,7 @@ function PixelField({ count = 56 }) {
       Array.from({ length: count }, (_, i) => ({
         left: (Math.random() * 98).toFixed(2),
         top: (Math.random() * 96).toFixed(2),
-        size: 3 + Math.round(Math.random() * 3),
+        size: 8 + Math.round(Math.random() * 4),
         color: PALETTE[i % PALETTE.length],
         delay: (Math.random() * 4).toFixed(2),
         dur: (2 + Math.random() * 3).toFixed(2),
@@ -60,7 +60,7 @@ function PixelField({ count = 56 }) {
             width: d.size,
             height: d.size,
             background: d.color,
-            boxShadow: '0 0 6px ' + d.color,
+            boxShadow: '0 0 12px ' + d.color,
             animationDelay: d.delay + 's',
             animationDuration: d.dur + 's',
           }}
