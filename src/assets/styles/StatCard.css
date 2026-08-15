@@ -1,99 +1,208 @@
+/* Import Pixel/Retro Fonts dari Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=JetBrains+Mono:wght@400;700&display=swap');
+
 .stat-cards {
   display: grid;
-  gap: 20px;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 .stat-card {
   --accent: #22d3ee;
-  --glow: rgba(34, 211, 238, 0.28);
+  --bg-dark: #050810;
+  --bg-main: #0a1120;
+  
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: #0d1526;
-  border: 2px solid var(--accent);
-  padding: 18px;
-  box-shadow:
-    6px 6px 0 rgba(0, 0, 0, 0.6),
-    0 0 18px var(--glow);
-  transition:
-    transform 0.14s ease,
-    box-shadow 0.14s ease;
+  background: var(--bg-main);
+  border: 4px solid var(--accent);
+  padding: 0; 
+  box-shadow: 
+    8px 8px 0 rgba(0, 0, 0, 0.8), 
+    0 0 20px rgba(34, 211, 238, 0.15);
+  transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: visible; 
 }
+
 .stat-card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow:
-    9px 9px 0 rgba(0, 0, 0, 0.6),
-    0 0 26px var(--glow);
+  transform: translate(-4px, -4px);
+  box-shadow: 
+    12px 12px 0 rgba(0, 0, 0, 0.9),
+    0 0 30px rgba(34, 211, 238, 0.25);
 }
 
-.stat-card.rose {
-  --accent: #ff5c8a;
-  --glow: rgba(255, 92, 138, 0.28);
-}
-.stat-card.amber {
-  --accent: #facc15;
-  --glow: rgba(250, 204, 21, 0.28);
+/* Untuk Efek Scanlines Monitor CRT */
+.stat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 3;
 }
 
-.stat-card__icon {
-  flex-shrink: 0;
+/* Menambahkan Kotak Dekorasi di 4 Sudut */
+.stat-card__corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  z-index: 4;
+}
+.stat-card__corner--tl { top: -4px; left: -4px; }
+.stat-card__corner--tr { top: -4px; right: -4px; }
+.stat-card__corner--bl { bottom: -4px; left: -4px; }
+.stat-card__corner--br { bottom: -4px; right: -4px; }
+
+.stat-card__header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border: 2px solid var(--accent);
-  background: rgba(0, 0, 0, 0.35);
-  color: var(--accent);
+  justify-content: space-between;
+  background: var(--accent);
+  color: var(--bg-dark);
+  padding: 4px 8px;
+  font-family: 'Press Start 2P', 'JetBrains Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.stat-card__window-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.stat-card__window-btn {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--bg-dark);
+  background: transparent;
 }
 
 .stat-card__body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.stat-card__icon-box {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border: 3px solid var(--accent);
+  background: var(--bg-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  box-shadow: inset -4px -4px 0 rgba(255,255,255,0.05);
+  position: relative;
+}
+
+/* pixel kecil icon box */
+.stat-card__icon-box::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+.stat-card__content {
   min-width: 0;
+  flex: 1;
 }
 
 .stat-card__label {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10px;
-  letter-spacing: 2px;
+  font-family: 'Press Start 2P', 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
   color: #8fa3bd;
-  margin-bottom: 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin-bottom: 10px;
+  line-height: 1.4;
 }
 
 .stat-card__value {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-weight: 700;
-  font-size: 28px;
+  font-family: 'VT323', 'JetBrains Mono', monospace;
+  font-weight: 400;
+  font-size: 42px;
   color: var(--accent);
-  text-shadow: 0 0 10px var(--glow);
+  text-shadow: 
+    0 0 10px var(--accent),
+    2px 2px 0 rgba(0, 0, 0, 0.8); 
   line-height: 1;
+  letter-spacing: 2px;
 }
 
-/* skeleton loading */
+.stat-card__suffix {
+  font-size: 28px;
+  margin-left: 4px;
+}
+
+.stat-card.rose { --accent: #ff5c8a; }
+.stat-card.amber { --accent: #facc15; }
+
+/* Skeleton Loading Effect */
 .stat-card--skeleton {
   border-color: #1c2940;
-  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.4);
-  animation: stat-pulse 1.4s ease-in-out infinite;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.5);
 }
-@keyframes stat-pulse {
-  0%,
-  100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 0.9;
-  }
+.stat-card--skeleton .stat-card__header {
+  background: #1c2940;
+}
+.stat-card--skeleton .stat-card__icon-box,
+.stat-card--skeleton .stat-card__content {
+  background: repeating-linear-gradient(
+    45deg,
+    #0a1120,
+    #0a1120 10px,
+    #111b30 10px,
+    #111b30 20px
+  );
+  animation: stat-glitch 1.2s infinite;
 }
 
+@keyframes stat-glitch {
+  0%, 100% { opacity: 0.4; transform: translateX(0); }
+  50% { opacity: 0.8; transform: translateX(-2px); }
+}
+
+/* Error State */
 .stat-cards__error {
-  border: 2px solid #ff5c8a;
-  background: rgba(255, 92, 138, 0.08);
+  border: 4px solid #ff5c8a;
+  background: #050810;
   color: #ff5c8a;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 13px;
-  padding: 16px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  padding: 24px 20px;
+  line-height: 2;
+  box-shadow: 8px 8px 0 rgba(0,0,0,0.8);
+  position: relative;
+}
+
+.stat-cards__error .error-tag {
+  position: absolute;
+  top: -14px;
+  left: 16px;
+  background: #050810;
+  padding: 0 8px;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.stat-cards__error .error-msg {
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
 }
