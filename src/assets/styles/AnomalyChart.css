@@ -1,0 +1,294 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=JetBrains+Mono:wght@400;700&display=swap');
+
+.anomaly-chart {
+  --accent: #22d3ee;
+  --bg-dark: #050810;
+  --bg-main: #0a1120;
+  
+  position: relative;
+  background: var(--bg-main);
+  border: 4px solid var(--accent);
+  box-shadow: 
+    8px 8px 0 rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(34, 211, 238, 0.1);
+  transition: transform 0.1s ease;
+}
+
+.anomaly-chart:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 
+    10px 10px 0 rgba(0, 0, 0, 0.9),
+    0 0 25px rgba(34, 211, 238, 0.15);
+}
+
+.anomaly-chart::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.12),
+    rgba(0, 0, 0, 0.12) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+.anomaly-chart__corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  z-index: 6;
+}
+.anomaly-chart__corner--tl { top: -4px; left: -4px; }
+.anomaly-chart__corner--tr { top: -4px; right: -4px; }
+.anomaly-chart__corner--bl { bottom: -4px; left: -4px; }
+.anomaly-chart__corner--br { bottom: -4px; right: -4px; }
+
+
+.anomaly-chart__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--accent);
+  color: var(--bg-dark);
+  padding: 6px 10px;
+  font-family: 'Press Start 2P', 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.anomaly-chart__header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.anomaly-chart__status-indicator {
+  font-size: 8px;
+  animation: blink-status 1.5s infinite;
+}
+
+@keyframes blink-status {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+.anomaly-chart__title {
+  text-transform: uppercase;
+}
+
+.anomaly-chart__window-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.anomaly-chart__window-btn {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--bg-dark);
+  background: transparent;
+}
+
+.anomaly-chart__window-btn:first-child { background: var(--bg-dark); }
+
+
+.anomaly-chart__body {
+  padding: 20px;
+  min-height: 280px;
+  position: relative;
+  z-index: 2;
+}
+
+.anomaly-chart__tooltip {
+  border: 3px solid var(--accent);
+  background: var(--bg-dark);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.8);
+  min-width: 140px;
+}
+
+.anomaly-chart__tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--accent);
+  color: var(--bg-dark);
+  padding: 4px 8px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+
+.anomaly-chart__tooltip-close {
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.anomaly-chart__tooltip-body {
+  padding: 10px 12px;
+}
+
+.anomaly-chart__tooltip-label {
+  color: #8fa3bd;
+  font-size: 9px;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+.anomaly-chart__tooltip-value {
+  color: var(--accent);
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.anomaly-chart__error {
+  border: 3px solid #ff5c8a;
+  background: rgba(255, 92, 138, 0.08);
+  color: #ff5c8a;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  padding: 20px;
+  line-height: 2;
+  position: relative;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.6);
+}
+
+.anomaly-chart__error-tag {
+  position: absolute;
+  top: -12px;
+  left: 12px;
+  background: var(--bg-main);
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+.anomaly-chart__error .error-msg {
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.anomaly-chart__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  gap: 16px;
+}
+
+.anomaly-chart__empty-icon {
+  font-size: 48px;
+  color: #1c2940;
+}
+
+.anomaly-chart__empty-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #8fa3bd;
+  letter-spacing: 2px;
+  animation: blink-text 1.2s infinite;
+}
+
+@keyframes blink-text {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.4; }
+}
+
+/* Pixel Loader */
+.anomaly-chart__empty-loader {
+  display: flex;
+  gap: 8px;
+}
+
+.anomaly-chart__empty-loader span {
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  animation: pixel-bounce 0.8s infinite ease-in-out;
+}
+
+.anomaly-chart__empty-loader span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.anomaly-chart__empty-loader span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes pixel-bounce {
+  0%, 100% { 
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% { 
+    transform: translateY(-12px);
+    opacity: 1;
+  }
+}
+
+
+.anomaly-chart__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border-top: 2px solid #1c2940;
+  background: rgba(0, 0, 0, 0.3);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #8fa3bd;
+  letter-spacing: 1px;
+}
+
+.anomaly-chart__footer span:last-child {
+  color: var(--accent);
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+}
+
+.anomaly-chart .recharts-bar-rectangle .recharts-bar-background {
+  fill: transparent;
+}
+
+/* hover effect pada bar */
+.anomaly-chart .recharts-bar-rectangle:hover {
+  filter: brightness(1.2);
+}
+
+/* Grid lines pixelated */
+.anomaly-chart .recharts-cartesian-grid-horizontal line,
+.anomaly-chart .recharts-cartesian-grid-vertical line {
+  stroke-dasharray: 2 4;
+}
+
+/* Axis styling */
+.anomaly-chart .recharts-cartesian-axis-tick-value {
+  font-family: 'Press Start 2P', monospace !important;
+}
+
+.anomaly-chart .recharts-yAxis .recharts-cartesian-axis-tick-value {
+  font-family: 'VT323', monospace !important;
+}
+
+/* Tooltip wrapper */
+.anomaly-chart .recharts-tooltip-wrapper {
+  outline: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .anomaly-chart__body {
+    padding: 16px 12px;
+  }
+  
+  .anomaly-chart .recharts-cartesian-axis-tick-value {
+    font-size: 7px !important;
+  }
+}

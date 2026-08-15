@@ -1,18 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { PxlKitIcon } from '@pxlkit/core'
-import { Shield } from '@pxlkit/gamification'
+import { ShieldCheck, ScanFace, ChevronDown, Menu } from 'lucide-react'
 import icon from '@/assets/img/icon.png'
-import {
-  PixelIconFrame,
-  PixelBadge,
-  PixelPulse
-} from '@pxlkit/ui-kit'
-import {
-  ChevronDown,
-  ShieldCheck,
-  ScanFace
-} from 'lucide-react'
+import '@/assets/styles/Header.css'
 
 export default function Header({ isThreatActive }) {
   const [time, setTime] = useState('')
@@ -29,13 +19,11 @@ export default function Header({ isThreatActive }) {
     }
 
     update()
-
     const interval = setInterval(update, 1000)
 
     return () => clearInterval(interval)
   }, [])
 
-  // Close dropdown ketika klik di luar
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -54,153 +42,133 @@ export default function Header({ isThreatActive }) {
   }, [])
 
   return (
-    <header
-      className={`border-b-4 backdrop-blur sticky top-0 z-50 transition-colors duration-300 ${
-        isThreatActive
-          ? 'bg-rose-950/90 border-rose-500'
-          : 'bg-slate-900/90 border-slate-700'
-      }`}
-    >
+    <header className="aishield-header">
+      <span className="aishield-header__corner aishield-header__corner--tl" />
+      <span className="aishield-header__corner aishield-header__corner--tr" />
+      <span className="aishield-header__corner aishield-header__corner--bl" />
+      <span className="aishield-header__corner aishield-header__corner--br" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-
-        {/* Logo */}
+      <div className="aishield-header__container">
         <Link
           to="/"
           onClick={() => setIsMenuOpen(false)}
-          className="group flex items-start gap-3 px-4 py-3 border-b border-slate-800 hover:bg-cyan-950/30 transition-colors"
+          className="aishield-header__logo"
         >
-          <div className="flex items-center gap-3">
-          
-            <PixelIconFrame
-              tone={isThreatActive ? 'red' : 'cyan'}
-              icon={
-                <img
-                  src={icon}
-                  alt="Logo"
-                  width={50}
-                  height={50}
-                  className="pixel-render"
-                />
-              }
+          <div className="aishield-header__logo-icon">
+            <img
+              src={icon}
+              alt="Logo"
+              className="aishield-header__logo-img"
             />
-
-            <div>
-              <h1 className="text-xl font-bold tracking-widest text-cyan-400 uppercase">
-                Aegis AI
-              </h1>
-
-              <p className="text-[10px] text-slate-500 font-mono tracking-widest">
-                detect network anomalies & protect visual privacy
-              </p>
-            </div>
+          </div>
+          <div className="aishield-header__logo-text">
+            <h1 className="aishield-header__title">AEGIS AI</h1>
+            <p className="aishield-header__subtitle">
+              AI-POWERED CYBER DEFENSE
+            </p>
           </div>
         </Link>
 
-        {/* Navigation + Status */}
-        <div className="flex items-center gap-4">
-
-          {/* Product Dropdown */}
-          <div
-            ref={dropdownRef}
-            className="relative hidden sm:block"
-          >
+        <div className="aishield-header__right">
+          <div ref={dropdownRef} className="aishield-header__dropdown">
             <button
               type="button"
-              onClick={() => setIsMenuOpen(prev => !prev)}
-              className={`
-                flex items-center gap-2
-                px-3 py-2
-                border
-                font-mono text-xs
-                tracking-wider
-                transition-all duration-200
-                ${
-                  isMenuOpen
-                    ? 'bg-slate-800 border-cyan-400 text-cyan-400'
-                    : 'bg-slate-900/70 border-slate-700 text-slate-300 hover:border-cyan-500 hover:text-cyan-400'
-                }
-              `}
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              className={`aishield-header__dropdown-btn ${
+                isMenuOpen ? 'aishield-header__dropdown-btn--active' : ''
+              }`}
             >
-              <ShieldCheck size={16} />
-
-              <span>SECURITY TOOLS</span>
-
+              <ShieldCheck size={14} />
+              <span>TOOLS</span>
               <ChevronDown
-                size={14}
-                className={`transition-transform duration-200 ${
-                  isMenuOpen ? 'rotate-180' : ''
+                size={12}
+                className={`aishield-header__dropdown-chevron ${
+                  isMenuOpen ? 'aishield-header__dropdown-chevron--open' : ''
                 }`}
               />
             </button>
 
-            {/* Dropdown */}
+            {/* Dropdown Menu */}
             {isMenuOpen && (
-              <div className="absolute right-0 mt-2 w-64 border border-slate-700 bg-slate-950 shadow-2xl shadow-black/40">
+              <div className="aishield-header__dropdown-menu">
+                {/* Dropdown Header */}
+                <div className="aishield-header__dropdown-menu-header">
+                  <span>[SELECT MODULE]</span>
+                  <button
+                    className="aishield-header__dropdown-close"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
 
                 {/* AI Shield */}
                 <Link
                   to="/aishield"
                   onClick={() => setIsMenuOpen(false)}
-                  className="group flex items-start gap-3 px-4 py-3 border-b border-slate-800 hover:bg-cyan-950/30 transition-colors"
+                  className="aishield-header__dropdown-item"
                 >
-                  <div className="mt-0.5 text-cyan-400">
-                    <ShieldCheck size={18} />
+                  <div className="aishield-header__dropdown-item-icon">
+                    <ShieldCheck size={16} />
                   </div>
-
-                  <div>
-                    <div className="text-sm font-bold text-slate-200 group-hover:text-cyan-400">
-                      AI-Shield
+                  <div className="aishield-header__dropdown-item-content">
+                    <div className="aishield-header__dropdown-item-title">
+                      AI-SHIELD
                     </div>
-
-                    <div className="mt-1 text-[10px] text-slate-500 font-mono">
-                      AI-powered cyber defense
+                    <div className="aishield-header__dropdown-item-desc">
+                      Network anomaly detection
                     </div>
                   </div>
                 </Link>
 
-                {/* Privacy Detection */}
+                {/* Blur Ai */}
                 <Link
                   to="/blurai"
                   onClick={() => setIsMenuOpen(false)}
-                  className="group flex items-start gap-3 px-4 py-3 hover:bg-cyan-950/30 transition-colors"
+                  className="aishield-header__dropdown-item"
                 >
-                  <div className="mt-0.5 text-cyan-400">
-                    <ScanFace size={18} />
+                  <div className="aishield-header__dropdown-item-icon">
+                    <ScanFace size={16} />
                   </div>
-
-                  <div>
-                    <div className="text-sm font-bold text-slate-200 group-hover:text-cyan-400">
-                      Blur-AI
+                  <div className="aishield-header__dropdown-item-content">
+                    <div className="aishield-header__dropdown-item-title">
+                      BLUR-AI
                     </div>
-
-                    <div className="mt-1 text-[10px] text-slate-500 font-mono">
-                      Detect & protect visual privacy
+                    <div className="aishield-header__dropdown-item-desc">
+                      Visual privacy protection
                     </div>
                   </div>
                 </Link>
-
               </div>
             )}
           </div>
 
-          {/* System Status */}
-          <PixelPulse
-            trigger={isThreatActive}
-            duration={1200}
-          >
-            <PixelBadge tone={isThreatActive ? 'gold' : 'green'}>
-              {isThreatActive
-                ? 'THREAT ACTIVE'
-                : 'SYSTEM ACTIVE'}
-            </PixelBadge>
-          </PixelPulse>
-
-          {/* Clock */}
-          <div className="text-xs text-slate-500 font-mono hidden md:block">
-            {time}
+          <div className="aishield-header__status">
+            <div className="aishield-header__status-item">
+              <span
+                className={`aishield-header__status-dot ${
+                  isThreatActive
+                    ? 'aishield-header__status-dot--threat'
+                    : ''
+                }`}
+              />
+              <span className="aishield-header__status-text">
+                {isThreatActive ? 'THREAT DETECTED' : 'SYSTEM NORMAL'}
+              </span>
+            </div>
           </div>
 
+          <div className="aishield-header__clock">
+            <span className="aishield-header__clock-label">SYS.TIME</span>
+            <span className="aishield-header__clock-value">{time}</span>
+          </div>
+
+          <button
+            className="aishield-header__mobile-menu"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+          >
+            <Menu size={20} />
+          </button>
         </div>
       </div>
     </header>
