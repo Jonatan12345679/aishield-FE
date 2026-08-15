@@ -105,6 +105,166 @@
   51%, 100% { opacity: 0.4; }
 }
 
+/* HERO SECTION  */
+.aishield-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+  padding: 40px 16px 8px;
+}
+
+/*  Badge notched (sudut bertingkat ala pixel)  */
+.aishield-hero__badge {
+  --badge-color: #22d3ee;
+  display: inline-block;
+  padding: 3px; /* ketebalan "border" */
+  background: var(--badge-color);
+  clip-path: polygon(
+    0 6px, 3px 6px, 3px 3px, 6px 3px, 6px 0,
+    calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 6px, 100% 6px,
+    100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px), calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px), calc(100% - 6px) 100%,
+    6px 100%, 6px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px)
+  );
+  filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.35));
+}
+
+.aishield-hero__badge--threat {
+  --badge-color: #ff5c8a;
+  filter: drop-shadow(0 0 10px rgba(255, 92, 138, 0.45));
+  animation: hero-badge-flash 1s infinite;
+}
+
+@keyframes hero-badge-flash {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.75; }
+}
+
+.aishield-hero__badge-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 22px;
+  background: #04101a;
+  clip-path: polygon(
+    0 6px, 3px 6px, 3px 3px, 6px 3px, 6px 0,
+    calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 6px, 100% 6px,
+    100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px), calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px), calc(100% - 6px) 100%,
+    6px 100%, 6px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px)
+  );
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--badge-color);
+}
+
+.aishield-hero__badge-arrow {
+  animation: arrow-blink 1.2s infinite;
+}
+
+@keyframes arrow-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.2; }
+}
+
+.aishield-hero__title {
+  margin: 8px 0 0;
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(36px, 6vw, 60px);
+  letter-spacing: 8px;
+  color: #f8fafc;
+  text-shadow:
+    4px 4px 0 #0e7490,
+    0 0 24px rgba(34, 211, 238, 0.35);
+}
+
+.aishield-hero__title span {
+  color: #22d3ee;
+  text-shadow: 4px 4px 0 rgba(0, 0, 0, 0.7);
+}
+
+.aishield-hero__subtitle {
+  margin: 0;
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(13px, 2.4vw, 22px);
+  letter-spacing: 6px;
+  color: #e2e8f0;
+  text-shadow: 3px 3px 0 #0e7490;
+}
+
+.aishield-hero__tagline {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #8fa3bd;
+}
+
+.aishield-hero__cursor {
+  color: #22d3ee;
+  animation: hero-cursor-blink 0.9s infinite;
+}
+
+@keyframes hero-cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.aishield-hero__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.aishield-hero__chip {
+  --chip: #22d3ee;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 2px solid var(--chip);
+  color: var(--chip);
+  background: rgba(0, 0, 0, 0.35);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  letter-spacing: 1px;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.6);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  cursor: default;
+}
+
+.aishield-hero__chip:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.7);
+}
+
+.aishield-hero__chip--cyan   { --chip: #22d3ee; }
+.aishield-hero__chip--yellow { --chip: #facc15; }
+.aishield-hero__chip--rose   { --chip: #ff5c8a; }
+.aishield-hero__chip--purple { --chip: #b06df5; }
+
+@media (max-width: 640px) {
+  .aishield-hero {
+    padding-top: 24px;
+    gap: 14px;
+  }
+
+  .aishield-hero__title {
+    letter-spacing: 4px;
+  }
+
+  .aishield-hero__subtitle {
+    letter-spacing: 3px;
+  }
+
+  .aishield-hero__tagline {
+    font-size: 11px;
+  }
+}
+
 @media (max-width: 1024px) {
   .aishield-row--3col {
     grid-template-columns: 1fr;

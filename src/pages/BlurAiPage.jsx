@@ -252,7 +252,7 @@ export default function BlurAiPage() {
           </h1>
 
           <p className="font-pixel-body text-xl text-slate-400 max-w-2xl mx-auto mb-8">
-            &gt; DETECT SENSITIVE DATA. PROTECT YOUR IMAGES. PURE PIXEL POWER._
+            &gt; DETECT SENSITIVE DATA. PROTECT YOUR IMAGES._
           </p>
 
           <div className="flex flex-wrap justify-center gap-3 max-w-xl mx-auto">
