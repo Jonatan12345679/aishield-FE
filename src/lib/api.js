@@ -17,6 +17,8 @@ async function request(path, options = {}) {
 export const api = {
   getDashboardSummary: () => request('/dashboard/summary'),
 
+  getRiskScore: () => request('/dashboard/risk-score'),
+
   getEvents: ({ page = 1, pageSize = 50, anomalyOnly = false, riskLevel } = {}) => {
     const params = new URLSearchParams({
       page: String(page),

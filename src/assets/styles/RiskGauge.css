@@ -1,0 +1,431 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=JetBrains+Mono:wght@400;700&display=swap');
+
+.risk-gauge {
+  --accent: #22d3ee;
+  --level-color: #4ade80;
+  --bg-dark: #050810;
+  --bg-main: #0a1120;
+  
+  position: relative;
+  background: var(--bg-main);
+  border: 4px solid var(--accent);
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+/* Threat Active State */
+.risk-gauge--threat {
+  border-color: var(--level-color);
+  animation: gauge-threat-shake 0.5s infinite;
+}
+
+@keyframes gauge-threat-shake {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-2px, 2px); }
+  50% { transform: translate(2px, -2px); }
+  75% { transform: translate(-2px, -2px); }
+}
+
+.risk-gauge--threat::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 4px solid var(--level-color);
+  opacity: 0;
+  animation: gauge-threat-pulse 1.5s infinite;
+  pointer-events: none;
+}
+
+@keyframes gauge-threat-pulse {
+  0% {
+    opacity: 0.8;
+    inset: -4px;
+  }
+  100% {
+    opacity: 0;
+    inset: -20px;
+  }
+}
+
+/* CRT Scanlines */
+.risk-gauge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Corner Decorations */
+.risk-gauge__corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  z-index: 6;
+}
+
+.risk-gauge--threat .risk-gauge__corner {
+  background: var(--level-color);
+}
+
+.risk-gauge__corner--tl { top: -4px; left: -4px; }
+.risk-gauge__corner--tr { top: -4px; right: -4px; }
+.risk-gauge__corner--bl { bottom: -4px; left: -4px; }
+.risk-gauge__corner--br { bottom: -4px; right: -4px; }
+
+/* Window Header */
+.risk-gauge__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--accent);
+  color: var(--bg-dark);
+  padding: 6px 10px;
+  font-family: 'Press Start 2P', 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.risk-gauge--threat .risk-gauge__header {
+  background: var(--level-color);
+}
+
+.risk-gauge__header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.risk-gauge__status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--bg-dark);
+  animation: status-blink 1.5s infinite;
+}
+
+@keyframes status-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+.risk-gauge__window-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.risk-gauge__window-btn {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--bg-dark);
+  background: transparent;
+}
+
+.risk-gauge__window-btn:first-child { background: var(--bg-dark); }
+
+/* Body */
+.risk-gauge__body {
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Circular Gauge Display */
+.risk-gauge__display {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.risk-gauge__ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.risk-gauge__ring-bg {
+  stroke: #1c2940;
+}
+
+.risk-gauge__ring-progress {
+  stroke: var(--level-color);
+  transition: stroke-dasharray 0.8s ease;
+  filter: drop-shadow(0 0 8px var(--level-color));
+}
+
+.risk-gauge__score-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.risk-gauge__score {
+  font-family: 'VT323', 'JetBrains Mono', monospace;
+  font-size: 72px;
+  color: var(--level-color);
+  text-shadow: 
+    0 0 20px var(--level-color),
+    3px 3px 0 rgba(0, 0, 0, 0.8);
+  line-height: 1;
+  letter-spacing: 2px;
+}
+
+.risk-gauge__score-change {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  animation: score-change-fade 0.5s ease;
+}
+
+@keyframes score-change-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.risk-gauge__score-change--up {
+  color: #ff5c8a;
+}
+
+.risk-gauge__score-change--down {
+  color: #4ade80;
+}
+
+/* Level Label */
+.risk-gauge__level {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.risk-gauge__level-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  color: var(--level-color);
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+}
+
+.risk-gauge__threat-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: var(--level-color);
+  letter-spacing: 1px;
+  padding: 4px 8px;
+  border: 2px solid var(--level-color);
+  background: rgba(0, 0, 0, 0.4);
+  animation: threat-badge-blink 1s infinite;
+}
+
+@keyframes threat-badge-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.4; }
+}
+
+/* Stats Footer */
+.risk-gauge__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-top: 2px solid #1c2940;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.risk-gauge__stats {
+  display: flex;
+  gap: 16px;
+}
+
+.risk-gauge__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.risk-gauge__stat-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  color: #8fa3bd;
+  letter-spacing: 1px;
+}
+
+.risk-gauge__stat-value {
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.risk-gauge__stat--critical .risk-gauge__stat-value {
+  color: #ff5c8a;
+  text-shadow: 0 0 8px #ff5c8a;
+}
+
+.risk-gauge__stat--high .risk-gauge__stat-value {
+  color: #fb923c;
+  text-shadow: 0 0 8px #fb923c;
+}
+
+.risk-gauge__refresh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #8fa3bd;
+  letter-spacing: 1px;
+}
+
+.risk-gauge__refresh-dot {
+  width: 6px;
+  height: 6px;
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+  animation: refresh-pulse 2s infinite;
+}
+
+@keyframes refresh-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Error State */
+.risk-gauge--error {
+  border-color: #ff5c8a;
+}
+
+.risk-gauge--error .risk-gauge__header {
+  background: #ff5c8a;
+}
+
+.risk-gauge__error-body {
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.risk-gauge__error-icon {
+  font-size: 48px;
+  color: #ff5c8a;
+}
+
+.risk-gauge__error-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: #ff5c8a;
+  text-align: center;
+  line-height: 1.8;
+  letter-spacing: 1px;
+}
+
+.risk-gauge__error-text .error-msg {
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+/* Loading State */
+.risk-gauge__loading-body {
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.risk-gauge__loader {
+  display: flex;
+  gap: 8px;
+}
+
+.risk-gauge__loader span {
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  animation: pixel-bounce 0.8s infinite ease-in-out;
+}
+
+.risk-gauge__loader span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.risk-gauge__loader span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes pixel-bounce {
+  0%, 100% { 
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% { 
+    transform: translateY(-12px);
+    opacity: 1;
+  }
+}
+
+.risk-gauge__loading-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: #8fa3bd;
+  letter-spacing: 2px;
+  animation: text-blink 1.2s infinite;
+}
+
+@keyframes text-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.4; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .risk-gauge__display {
+    width: 160px;
+    height: 160px;
+  }
+  
+  .risk-gauge__score {
+    font-size: 56px;
+  }
+  
+  .risk-gauge__level-text {
+    font-size: 11px;
+  }
+  
+  .risk-gauge__stats {
+    gap: 12px;
+  }
+  
+  .risk-gauge__stat-value {
+    font-size: 16px;
+  }
+}

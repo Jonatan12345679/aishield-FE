@@ -11,7 +11,6 @@ import AlertToast from '@/components/alerts/AlertToast'
 import '@/assets/styles/AiShieldPage.css'
 
 export default function AiShieldPage() {
-  const [riskScore, setRiskScore] = useState(95) // TODO: ganti ke skor dari WebSocket/summary
   const [isThreatActive, setIsThreatActive] = useState(false)
   const [alertData, setAlertData] = useState(null)
   const [toast, setToast] = useState(null)
@@ -32,13 +31,11 @@ export default function AiShieldPage() {
 
   const simulateNormal = useCallback(() => {
     showToast('Simulation Started', 'Generating normal activity patterns...')
-    if (riskScore < 95) setRiskScore((prev) => Math.min(95, prev + 5))
-  }, [riskScore, showToast])
+  }, [showToast])
 
   const simulateThreat = useCallback(() => {
     if (isThreatActive) return
     setIsThreatActive(true)
-    setRiskScore(28)
 
     setAlertData({
       message: 'Anomalous login pattern detected from IP 185.220.101.42',
@@ -67,7 +64,6 @@ export default function AiShieldPage() {
 
   const resetDashboard = useCallback(() => {
     setIsThreatActive(false)
-    setRiskScore(95)
     setAlertData(null)
     showToast('Dashboard Reset', 'System restored to normal state.')
   }, [showToast])
@@ -85,7 +81,7 @@ export default function AiShieldPage() {
 
           {/*  gauge risiko, angka statistik, panel simulasi */}
           <div className="aishield-row aishield-row--3col">
-            <RiskGauge score={riskScore} isThreatActive={isThreatActive} />
+            <RiskGauge />
             <div className="aishield-row__cell">
               <StatCards />
             </div>

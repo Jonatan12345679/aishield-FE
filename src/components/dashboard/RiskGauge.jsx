@@ -1,83 +1,217 @@
-import { PixelCard } from '@pxlkit/ui-kit'
+import { useEffect, useState } from 'react'
+import { api } from '../../lib/api'
+import '@/assets/styles/RiskGauge.css'
 
-export default function RiskGauge({ score, isThreatActive }) {
-  const radius = 48
-  const circumference = 2 * Math.PI * radius
-  const offset = circumference - (score / 100) * circumference
-  
-  const getColor = () => {
-    if (score >= 80) return { 
-      stroke: '#34d399', 
-      text: 'text-emerald-400', 
-      label: 'SYSTEM SAFE', 
-      indicator: 'bg-emerald-400' 
-    }
-    if (score >= 50) return { 
-      stroke: '#fbbf24', 
-      text: 'text-amber-400', 
-      label: 'WARNING', 
-      indicator: 'bg-amber-400' 
-    }
-    return { 
-      stroke: '#fb7185', 
-      text: 'text-rose-400', 
-      label: 'CRITICAL', 
-      indicator: 'bg-rose-400' 
-    }
-  }
+const REFRESH_INTERVAL_MS = 5000
 
-  const colors = getColor()
+const LEVEL_COLORS = {
+  safe: '#4ade80',
+  low: '#86efac',
+  moderate: '#facc15',
+  elevated: '#fb923c',
+  critical: '#ff5c8a',
+}
 
-  return (
-    <PixelCard 
-      tone={score < 50 || isThreatActive ? 'red' : 'dark'} 
-      className="p-6 bg-slate-900/90 border-2 border-slate-700 backdrop-blur h-full flex flex-col justify-between"
-    >
-      {/* Header */}
-      <h3 className="text-xs font-bold text-slate-300 font-mono uppercase tracking-widest mb-6 border-b-2 border-slate-800 pb-3">
-        Risk Score
-      </h3>
-      
-      <div className="flex items-center justify-center flex-1">
-        <div className="relative w-40 h-40">
-          <svg className="w-40 h-40 transform -rotate-90" viewBox="0 0 120 120">
-            <circle 
-              cx="60" cy="60" r={radius} 
-              fill="none" 
-              stroke="#1e293b" 
-              strokeWidth="12"
-            />
-            <circle 
-              cx="60" cy="60" r={radius} 
-              fill="none" 
-              stroke={colors.stroke} 
-              strokeWidth="12" 
-              strokeDasharray={circumference} 
-              strokeDashoffset={offset} 
-              className="transition-all duration-700 ease-in-out"
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`text-4xl font-black font-mono ${colors.text}`}>
-              {score}
-            </span>
-            <span className="text-[10px] text-slate-500 mt-1 font-mono tracking-widest border-t-2 border-slate-800 pt-1 w-12 text-center">
-              /100
-            </span>
+const LEVEL_LABELS = {
+  safe: 'SECURE',
+  low: 'LOW RISK',
+  moderate: 'CAUTION',
+  elevated: 'WARNING',
+  critical: 'CRITICAL',
+}
+
+export default function RiskGauge() {
+  const [risk, setRisk] = useState(null)
+  const [error, setError] = useState(null)
+  const [prevScore, setPrevScore] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    function fetchRisk() {
+      api
+        .getRiskScore()
+        .then((res) => {
+          if (!cancelled) {
+            setPrevScore(risk?.score || null)
+            setRisk(res)
+            setError(null)
+          }
+        })
+        .catch((err) => {
+          if (!cancelled) setError(err.message)
+        })
+    }
+
+    fetchRisk()
+    const interval = setInterval(fetchRisk, REFRESH_INTERVAL_MS)
+
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [risk?.score])
+
+  const isThreatActive = risk?.level === 'elevated' || risk?.level === 'critical'
+  const levelColor = LEVEL_COLORS[risk?.level] || '#8fa3bd'
+  const scoreChange = risk && prevScore ? risk.score - prevScore : 0
+
+  // Error State
+  if (error) {
+    return (
+      <div className="risk-gauge risk-gauge--error">
+        <span className="risk-gauge__corner risk-gauge__corner--tl" />
+        <span className="risk-gauge__corner risk-gauge__corner--tr" />
+        <span className="risk-gauge__corner risk-gauge__corner--bl" />
+        <span className="risk-gauge__corner risk-gauge__corner--br" />
+        
+        <div className="risk-gauge__header">
+          <span>[X] ERROR</span>
+          <div className="risk-gauge__window-controls">
+            <span className="risk-gauge__window-btn" />
+            <span className="risk-gauge__window-btn" />
           </div>
         </div>
-      </div>
-      
-      <div className="text-center mt-6">
-        <div className="inline-flex items-center gap-3 px-3 py-1.5 border-2 border-slate-700 bg-slate-800 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-          <span 
-            className={`w-2.5 h-2.5 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] ${colors.indicator} ${isThreatActive ? 'animate-pulse' : ''}`}
-          ></span>
-          <span className={`text-xs font-bold font-mono uppercase tracking-widest ${colors.text}`}>
-            {colors.label}
-          </span>
+        
+        <div className="risk-gauge__error-body">
+          <span className="risk-gauge__error-icon">⚠</span>
+          <p className="risk-gauge__error-text">
+            Gagal narik risk score: <span className="error-msg">{error}</span>
+          </p>
         </div>
       </div>
-    </PixelCard>
+    )
+  }
+
+  // Loading State
+  if (!risk) {
+    return (
+      <div className="risk-gauge risk-gauge--loading">
+        <span className="risk-gauge__corner risk-gauge__corner--tl" />
+        <span className="risk-gauge__corner risk-gauge__corner--tr" />
+        <span className="risk-gauge__corner risk-gauge__corner--bl" />
+        <span className="risk-gauge__corner risk-gauge__corner--br" />
+        
+        <div className="risk-gauge__header">
+          <span>SYSTEM.RISK</span>
+          <div className="risk-gauge__window-controls">
+            <span className="risk-gauge__window-btn" />
+            <span className="risk-gauge__window-btn" />
+          </div>
+        </div>
+        
+        <div className="risk-gauge__loading-body">
+          <div className="risk-gauge__loader">
+            <span />
+            <span />
+            <span />
+          </div>
+          <p className="risk-gauge__loading-text">CALCULATING RISK LEVEL...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Main Render
+  return (
+    <div 
+      className={`risk-gauge ${isThreatActive ? 'risk-gauge--threat' : ''}`}
+      style={{ '--level-color': levelColor }}
+    >
+      {/* Corner Decorations */}
+      <span className="risk-gauge__corner risk-gauge__corner--tl" />
+      <span className="risk-gauge__corner risk-gauge__corner--tr" />
+      <span className="risk-gauge__corner risk-gauge__corner--bl" />
+      <span className="risk-gauge__corner risk-gauge__corner--br" />
+
+      {/* Window Header */}
+      <div className="risk-gauge__header">
+        <div className="risk-gauge__header-left">
+          <span className="risk-gauge__status-dot" />
+          <span>SYSTEM.RISK</span>
+        </div>
+        <div className="risk-gauge__window-controls">
+          <span className="risk-gauge__window-btn" />
+          <span className="risk-gauge__window-btn" />
+          <span className="risk-gauge__window-btn" />
+        </div>
+      </div>
+
+      {/* Gauge Display */}
+      <div className="risk-gauge__body">
+        <div className="risk-gauge__display">
+          {/* Circular Progress Ring */}
+          <svg className="risk-gauge__ring" viewBox="0 0 200 200">
+            <circle
+              className="risk-gauge__ring-bg"
+              cx="100"
+              cy="100"
+              r="85"
+              fill="none"
+              strokeWidth="8"
+            />
+            <circle
+              className="risk-gauge__ring-progress"
+              cx="100"
+              cy="100"
+              r="85"
+              fill="none"
+              strokeWidth="8"
+              strokeDasharray={`${(risk.score / 100) * 534} 534`}
+              strokeLinecap="square"
+              transform="rotate(-90 100 100)"
+            />
+          </svg>
+          
+          {/* Score Value */}
+          <div className="risk-gauge__score-container">
+            <span className="risk-gauge__score">{risk.score}</span>
+            {scoreChange !== 0 && (
+              <span className={`risk-gauge__score-change ${scoreChange > 0 ? 'risk-gauge__score-change--up' : 'risk-gauge__score-change--down'}`}>
+                {scoreChange > 0 ? '▲' : '▼'} {Math.abs(scoreChange)}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Level Label */}
+        <div className="risk-gauge__level">
+          <span className="risk-gauge__level-text">
+            {LEVEL_LABELS[risk.level] || risk.level.toUpperCase()}
+          </span>
+          {isThreatActive && (
+            <span className="risk-gauge__threat-badge">
+              ⚠ THREAT DETECTED
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Stats Footer */}
+      <div className="risk-gauge__footer">
+        <div className="risk-gauge__stats">
+          <div className="risk-gauge__stat">
+            <span className="risk-gauge__stat-label">SAMPLE</span>
+            <span className="risk-gauge__stat-value">{risk.sample_size}</span>
+          </div>
+          {risk.critical_count > 0 && (
+            <div className="risk-gauge__stat risk-gauge__stat--critical">
+              <span className="risk-gauge__stat-label">CRIT</span>
+              <span className="risk-gauge__stat-value">{risk.critical_count}</span>
+            </div>
+          )}
+          {risk.high_count > 0 && (
+            <div className="risk-gauge__stat risk-gauge__stat--high">
+              <span className="risk-gauge__stat-label">HIGH</span>
+              <span className="risk-gauge__stat-value">{risk.high_count}</span>
+            </div>
+          )}
+        </div>
+        <div className="risk-gauge__refresh">
+          <span className="risk-gauge__refresh-dot" />
+          <span>{REFRESH_INTERVAL_MS / 1000}s</span>
+        </div>
+      </div>
+    </div>
   )
 }
