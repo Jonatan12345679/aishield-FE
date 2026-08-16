@@ -244,7 +244,7 @@ export default function BlurAiPage() {
           </div>
 
           <h1 className="font-pixel-display text-3xl sm:text-4xl lg:text-5xl uppercase mb-6 text-white pixel-title-shadow glitch-hover leading-relaxed">
-            BLUR<br className="sm:hidden" /> <span className="text-[#0a4237]">AI</span>
+            BLUR<span className="text-[#0a4237]">AI</span>
           </h1>
 
           <h1 className="font-pixel-display text-xl sm:text-2xl lg:text-3xl uppercase mb-6 text-white pixel-title-shadow glitch-hover leading-relaxed">
