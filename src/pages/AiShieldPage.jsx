@@ -37,44 +37,44 @@ export default function AiShieldPage() {
     setTimeout(() => setToast(null), 4000)
   }, [])
 
-  const simulateNormal = useCallback(() => {
-    showToast('Simulation Started', 'Generating normal activity patterns...')
-  }, [showToast])
-
-  const simulateThreat = useCallback(() => {
-    if (isThreatActive) return
-    setIsThreatActive(true)
-
-    setAlertData({
-      message: 'Anomalous login pattern detected from IP 185.220.101.42',
-      oldScore: 95,
-      newScore: 28,
-      explanations: [
-        { label: 'Time Anomaly', value: 'Login at 03:47 AM', percent: 92 },
-        { label: 'Geo Distance', value: '8,247 km from last', percent: 88 },
-        { label: 'Failed Attempts', value: '12x in 30 seconds', percent: 95 },
-      ],
-    })
-
-    setTimeline((prev) => [
-      {
-        id: Date.now(),
-        time: new Date().toLocaleTimeString('id-ID', { hour12: false }),
-        title: 'THREAT DETECTED',
-        desc: 'AI detected anomalous pattern. Risk score dropped from 95 to 28.',
-        type: 'threat',
-      },
-      ...prev,
-    ])
-
-    showToast('⚠ THREAT DETECTED', 'Anomaly identified by AI model. Check dashboard.')
-  }, [isThreatActive, showToast])
-
-  const resetDashboard = useCallback(() => {
-    setIsThreatActive(false)
-    setAlertData(null)
-    showToast('Dashboard Reset', 'System restored to normal state.')
-  }, [showToast])
+  const handleSimulationResult = useCallback(
+    (result) => {
+      const isAttack = result.attack_type !== 'normal'
+      const hasAnomalies = result.anomalies_detected > 0
+ 
+      if (isAttack && hasAnomalies) {
+        setIsThreatActive(true)
+        setAlertData({
+          message: `${result.total_generated} event "${result.attack_type}" digenerate, ${result.anomalies_detected} terdeteksi sebagai anomali`,
+          attackType: result.attack_type,
+          totalGenerated: result.total_generated,
+          anomaliesDetected: result.anomalies_detected,
+          durationSec: result.duration_sec,
+        })
+ 
+        setTimeline((prev) => [
+          {
+            id: Date.now(),
+            time: new Date().toLocaleTimeString('id-ID', { hour12: false }),
+            title: `${result.attack_type.replace('_', ' ').toUpperCase()} DETECTED`,
+            desc: `${result.anomalies_detected}/${result.total_generated} event terdeteksi anomali dalam ${result.duration_sec}s`,
+            type: 'threat',
+          },
+          ...prev,
+        ])
+ 
+        showToast(
+          '⚠ SIMULATION COMPLETE',
+          `${result.anomalies_detected}/${result.total_generated} event terdeteksi sebagai anomali`
+        )
+      } else {
+        setIsThreatActive(false)
+        setAlertData(null)
+        showToast('Simulation Complete', `${result.total_generated} normal traffic event digenerate`)
+      }
+    },
+    [showToast]
+  )
 
   return (
     <div className="aishield-page">
@@ -132,12 +132,7 @@ export default function AiShieldPage() {
             <div className="aishield-row__cell">
               <StatCards />
             </div>
-            <SimulationPanel
-              onSimulateNormal={simulateNormal}
-              onSimulateThreat={simulateThreat}
-              onReset={resetDashboard}
-              isThreatActive={isThreatActive}
-            />
+            <SimulationPanel onResult={handleSimulationResult} />
           </div>
 
           {/* chart distribusi serangan + log event realtime */}
