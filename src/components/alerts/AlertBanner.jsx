@@ -1,39 +1,134 @@
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, X } from 'lucide-react'
+import '@/assets/styles/AlertBanner.css'
 
-export default function AlertBanner({ data }) {
+export default function AlertBanner({ data, onDismiss }) {
+  const isLegacy = data.explanations && data.explanations.length > 0
+  const threatColor = '#ff5c8a'
+
+  const anomalyRatio =
+    !isLegacy && data.totalGenerated > 0
+      ? Math.round((data.anomaliesDetected / data.totalGenerated) * 100)
+      : 0
+
+  const scoreDiff =
+    isLegacy && data.oldScore != null && data.newScore != null
+      ? data.oldScore - data.newScore
+      : null
+
   return (
-    <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 animate-slide-in">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-rose-500/20 flex items-center justify-center animate-pulse">
-          <AlertTriangle className="w-6 h-6 text-rose-400" />
+    <div
+      className={`alert-banner ${isLegacy ? 'alert-banner--legacy' : ''}`}
+      style={{ '--threat-color': threatColor }}
+    >
+      <span className="alert-banner__corner alert-banner__corner--tl" />
+      <span className="alert-banner__corner alert-banner__corner--tr" />
+      <span className="alert-banner__corner alert-banner__corner--bl" />
+      <span className="alert-banner__corner alert-banner__corner--br" />
+
+      <div className="alert-banner__header">
+        <div className="alert-banner__header-left">
+          <span className="alert-banner__header-dot" />
+          <AlertTriangle size={14} strokeWidth={2.5} />
+          <span className="alert-banner__header-title">
+            THREAT DETECTED
+          </span>
         </div>
-        <div className="flex-1">
-          <h4 className="text-rose-400 font-bold text-lg">THREAT DETECTED</h4>
-          <p className="text-sm text-rose-300/80">{data.message}</p>
-        </div>
-        <div className="text-right">
-          <div className="text-xs text-rose-400/60">RISK INCREASED</div>
-          <div className="text-2xl font-bold text-rose-400">+{data.oldScore - data.newScore}</div>
-        </div>
+        <button
+          onClick={onDismiss}
+          className="alert-banner__close"
+          aria-label="Dismiss"
+        >
+          <X size={14} strokeWidth={3} />
+        </button>
       </div>
-      
-      {/* Penjelasan Panel AI */}
-      <div className="mt-4 pt-4 border-t border-rose-500/20">
-        <div className="text-xs text-rose-400/60 mb-2 font-semibold uppercase tracking-wider">AI Analysis</div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {data.explanations.map((exp, i) => (
-            <div key={i} className="bg-rose-500/5 rounded-lg p-3 border border-rose-500/10">
-              <div className="text-xs text-slate-400">{exp.label}</div>
-              <div className="text-sm font-semibold text-rose-300">{exp.value}</div>
-              <div className="w-full bg-slate-800 rounded-full h-1.5 mt-2">
-                <div 
-                  className="bg-rose-400 h-1.5 rounded-full transition-all duration-1000" 
-                  style={{ width: `${exp.percent}%` }}
-                ></div>
-              </div>
-            </div>
-          ))}
+
+      <div className="alert-banner__body">
+        <div className="alert-banner__message">
+          <span className="alert-banner__prefix">&gt;</span>
+          {data.message}
         </div>
+
+        {!isLegacy && (
+          <div className="alert-banner__stats">
+            <div className="alert-banner__stat">
+              <span className="alert-banner__stat-label">TYPE</span>
+              <span className="alert-banner__stat-value alert-banner__stat-value--type">
+                {(data.attackType || 'unknown')
+                  .replace('_', ' ')
+                  .toUpperCase()}
+              </span>
+            </div>
+
+            <div className="alert-banner__stat">
+              <span className="alert-banner__stat-label">GENERATED</span>
+              <span className="alert-banner__stat-value">
+                {data.totalGenerated}
+              </span>
+            </div>
+
+            <div className="alert-banner__stat alert-banner__stat--highlight">
+              <span className="alert-banner__stat-label">ANOMALIES</span>
+              <span className="alert-banner__stat-value alert-banner__stat-value--danger">
+                {data.anomaliesDetected}
+              </span>
+            </div>
+
+            <div className="alert-banner__stat">
+              <span className="alert-banner__stat-label">DURATION</span>
+              <span className="alert-banner__stat-value">
+                {data.durationSec}s
+              </span>
+            </div>
+          </div>
+        )}
+
+        {!isLegacy && data.totalGenerated > 0 && (
+          <div className="alert-banner__ratio">
+            <div className="alert-banner__ratio-header">
+              <span>DETECTION RATIO</span>
+              <span>{anomalyRatio}%</span>
+            </div>
+            <div className="alert-banner__ratio-bar">
+              <div
+                className="alert-banner__ratio-fill"
+                style={{ width: `${anomalyRatio}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {isLegacy && (
+          <div className="alert-banner__ai">
+            <div className="alert-banner__ai-title">
+              <span>▸ AI ANALYSIS</span>
+              {scoreDiff != null && (
+                <span className="alert-banner__ai-score">
+                  RISK ↓ {scoreDiff}
+                </span>
+              )}
+            </div>
+            <div className="alert-banner__ai-grid">
+              {data.explanations.map((exp, i) => (
+                <div key={i} className="alert-banner__ai-item">
+                  <div className="alert-banner__ai-label">{exp.label}</div>
+                  <div className="alert-banner__ai-value">{exp.value}</div>
+                  <div className="alert-banner__ai-bar">
+                    <div
+                      className="alert-banner__ai-bar-fill"
+                      style={{ width: `${exp.percent}%` }}
+                    />
+                  </div>
+                  <span className="alert-banner__ai-pct">{exp.percent}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="alert-banner__footer">
+        <span>⚠ IMMEDIATE ACTION REQUIRED</span>
+        <span>{new Date().toLocaleTimeString('id-ID', { hour12: false })}</span>
       </div>
     </div>
   )

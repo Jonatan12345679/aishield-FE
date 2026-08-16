@@ -11,7 +11,7 @@ const ATTACK_BUTTONS = [
   { type: 'data_exfiltration', label: 'Data Exfil', tone: 'purple', icon: FileUp },
 ]
 
-export default function SimulationPanel() {
+export default function SimulationPanel( {onResult}) {
   const [runningType, setRunningType] = useState(null)
   const [lastResult, setLastResult] = useState(null)
   const [error, setError] = useState(null)
@@ -26,6 +26,7 @@ export default function SimulationPanel() {
     try {
       const result = await aiShieldApi.triggerSimulation(attackType)
       setLastResult(result)
+      onResult?.(result)
     } catch (err) {
       setError(err.message)
     } finally {
