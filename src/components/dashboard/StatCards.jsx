@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Activity, AlertTriangle, Percent } from 'lucide-react'
-import { api } from '../../lib/api'
+import { aiShieldApi } from '@/services/aiShieldApi'
 import '@/assets/styles/StatCard.css'
 
 const CARD_CONFIG = [
@@ -33,7 +33,7 @@ export default function StatCards() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    api
+    aiShieldApi
       .getDashboardSummary()
       .then(setSummary)
       .catch((err) => setError(err.message))
