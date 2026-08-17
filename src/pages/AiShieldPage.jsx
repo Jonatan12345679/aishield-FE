@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ScanSearch, KeyRound, Zap, FileUp } from 'lucide-react'
 import Header from '@/components/layout/Header'
 import RiskGauge from '@/components/dashboard/RiskGauge'
@@ -10,6 +10,7 @@ import SimulationPanel from '@/components/dashboard/SimulationPanel'
 import AlertBanner from '@/components/alerts/AlertBanner'
 import AlertToast from '@/components/alerts/AlertToast'
 import '@/assets/styles/AiShieldPage.css'
+import { useWebSocket } from '@/hooks/useWebSocket' 
 
 const HERO_CHIPS = [
   { label: 'PORT SCAN', tone: 'cyan', icon: ScanSearch },
@@ -22,25 +23,26 @@ export default function AiShieldPage() {
   const [isThreatActive, setIsThreatActive] = useState(false)
   const [alertData, setAlertData] = useState(null)
   const [toast, setToast] = useState(null)
-  const [timeline, setTimeline] = useState([
-    {
-      id: 1,
-      time: '22:30:15',
-      title: 'System Scan Complete',
-      desc: 'Full security scan finished. No threats found.',
-      type: 'safe',
-    },
-  ])
 
   const showToast = useCallback((title, message) => {
-    setToast({ title, message })
+    setToast({ title, message, key: Date.now() })
     setTimeout(() => setToast(null), 4000)
   }, [])
+
+  const { lastMessage } = useWebSocket()
+  const localSimRef = useRef(false)
+
+  const handleSimStart = useCallback(() => {
+  localSimRef.current = true
+}, [])
+
 
   const handleSimulationResult = useCallback(
     (result) => {
       const isAttack = result.attack_type !== 'normal'
       const hasAnomalies = result.anomalies_detected > 0
+      setTimeout(() => (localSimRef.current = false), 3000)
+
  
       if (isAttack && hasAnomalies) {
         setIsThreatActive(true)
@@ -51,17 +53,6 @@ export default function AiShieldPage() {
           anomaliesDetected: result.anomalies_detected,
           durationSec: result.duration_sec,
         })
- 
-        setTimeline((prev) => [
-          {
-            id: Date.now(),
-            time: new Date().toLocaleTimeString('id-ID', { hour12: false }),
-            title: `${result.attack_type.replace('_', ' ').toUpperCase()} DETECTED`,
-            desc: `${result.anomalies_detected}/${result.total_generated} event terdeteksi anomali dalam ${result.duration_sec}s`,
-            type: 'threat',
-          },
-          ...prev,
-        ])
  
         showToast(
           '⚠ SIMULATION COMPLETE',
@@ -75,6 +66,25 @@ export default function AiShieldPage() {
     },
     [showToast]
   )
+
+  useEffect(() => {
+  if (!lastMessage || lastMessage.type !== 'simulation_complete') return
+  if (localSimRef.current) return // simulasi lokal, sudah di-handle onResult
+
+  const { attack_type, total_generated, anomalies_detected, duration_sec } = lastMessage
+
+  if (anomalies_detected > 0) {
+    setIsThreatActive(true)
+    setAlertData({
+      message: `SESI LAIN: ${total_generated} event "${attack_type}" digenerate, ${anomalies_detected} terdeteksi sebagai anomali`,
+      attackType: attack_type,
+      totalGenerated: total_generated,
+      anomaliesDetected: anomalies_detected,
+      durationSec: duration_sec,
+    })
+    showToast('⚠ REALTIME ALERT', `${anomalies_detected}/${total_generated} anomali terdeteksi dari sesi lain`)
+  }
+}, [lastMessage, showToast])
 
   return (
     <div className="aishield-page">
@@ -132,7 +142,10 @@ export default function AiShieldPage() {
             <div className="aishield-row__cell">
               <StatCards />
             </div>
-            <SimulationPanel onResult={handleSimulationResult} />
+            <SimulationPanel
+             onStart={handleSimStart} 
+             onResult={handleSimulationResult} 
+             />
           </div>
 
           {/* chart distribusi serangan + log event realtime */}
@@ -142,7 +155,7 @@ export default function AiShieldPage() {
           </div>
 
           {/* timeline deteksi */}
-          <ThreatTimeline events={timeline} />
+          <ThreatTimeline />
         </main>
 
         <footer className="aishield-page__footer">
@@ -157,7 +170,9 @@ export default function AiShieldPage() {
         </footer>
       </div>
 
-      {toast && <AlertToast title={toast.title} message={toast.message} />}
+     {toast && (
+      <AlertToast key={toast.key} title={toast.title} message={toast.message} />
+)}
     </div>
   )
 }

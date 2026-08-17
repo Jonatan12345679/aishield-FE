@@ -233,7 +233,6 @@ export default function BlurAiPage() {
       />
 
       <main className="relative z-10 max-w-7xl mx-auto px-4 py-8">
-        {/* HERO */}
         <section className="py-12 mb-16 text-center">
           <div className="pixel-frame inline-block mb-8 pixel-accent-cyan">
             <div className="pixel-frame-inner px-4 py-1.5">
@@ -272,7 +271,7 @@ export default function BlurAiPage() {
           </div>
         </section>
 
-        {/* WORKSPACE */}
+
         <div ref={workspaceRef} className="mb-20">
           <div className="pixel-frame pixel-accent-cyan">
             <div className="pixel-frame-inner">
@@ -506,7 +505,6 @@ export default function BlurAiPage() {
           </div>
         </div>
 
-        {/* CAPABILITIES */}
         <PixelSection className="mb-16">
           <div className="text-center mb-10">
             <h2 className="font-pixel-display text-lg uppercase text-white mb-3 tracking-widest">

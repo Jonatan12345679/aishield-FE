@@ -11,14 +11,14 @@ const ATTACK_BUTTONS = [
   { type: 'data_exfiltration', label: 'Data Exfil', tone: 'purple', icon: FileUp },
 ]
 
-export default function SimulationPanel( {onResult}) {
+export default function SimulationPanel( {onResult, onStart}) {
   const [runningType, setRunningType] = useState(null)
   const [lastResult, setLastResult] = useState(null)
   const [error, setError] = useState(null)
 
   async function handleTrigger(attackType) {
     if (runningType) return // cegah spam klik pas masih ada simulasi jalan
-
+    onStart?.()
     setRunningType(attackType)
     setError(null)
     setLastResult(null)

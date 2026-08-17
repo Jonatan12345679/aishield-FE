@@ -35,7 +35,6 @@
   image-rendering: crisp-edges;
 }
 
-/* ---------- background layers ---------- */
 
 .pixel-dither {
   background-color: var(--pixel-bg);
@@ -64,7 +63,6 @@
 
 .pixel-root { animation: pixel-flicker 6s steps(1) infinite; }
 
-/* ---------- signature: stair-step pixel frame ---------- */
 
 .pixel-frame {
   --accent: var(--pixel-cyan);
@@ -93,7 +91,6 @@
 .pixel-accent-cyan { --accent: var(--pixel-cyan); }
 .pixel-accent-red { --accent: var(--pixel-red); }
 
-/* ---------- title bar strip ---------- */
 
 .pixel-titlebar {
   display: flex;
@@ -109,8 +106,6 @@
   background: var(--pixel-bg);
   border: 2px solid #1c2836;
 }
-
-/* ---------- dot indicators ---------- */
 
 .pixel-dot {
   display: inline-block;
@@ -137,7 +132,6 @@
   animation: pixel-blink 1.2s steps(1) infinite;
 }
 
-/* ---------- upload slot ---------- */
 
 .pixel-slot {
   background: #05070a80;
@@ -160,7 +154,6 @@
   background: #00ffcc14;
 }
 
-/* ---------- image viewport + reticle brackets ---------- */
 
 .pixel-screen {
   background: #000;
@@ -183,7 +176,6 @@
 .pixel-corner-bl { bottom: 8px; left: 8px; border-bottom-width: 4px; border-left-width: 4px; }
 .pixel-corner-br { bottom: 8px; right: 8px; border-bottom-width: 4px; border-right-width: 4px; }
 
-/* ---------- buttons ---------- */
 
 .pixel-btn {
   border-radius: 0 !important;
@@ -200,7 +192,6 @@
   border-radius: 0 !important;
 }
 
-/* ---------- HUD sidebar ---------- */
 
 .pixel-hud {
   background: var(--pixel-surface);
@@ -280,7 +271,6 @@
   background: repeating-linear-gradient(90deg, #10182380 0 8px, #1c283680 8px 16px) !important;
 }
 
-/* ---------- segmented HP-bar style meter ---------- */
 
 .pixel-meter {
   display: flex;
@@ -294,7 +284,6 @@
   box-sizing: border-box;
 }
 
-/* ---------- 8-point pixel loading ring ---------- */
 
 .pixel-loader-wrap {
   display: flex;
@@ -329,7 +318,6 @@
   13%, 100% { opacity: 0.15; }
 }
 
-/* ---------- headline treatment ---------- */
 
 .pixel-title-shadow {
   text-shadow:
@@ -349,7 +337,6 @@
   100% { transform: translate(0, 0); }
 }
 
-/* ---------- reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
   .pixel-root,
@@ -362,7 +349,6 @@
   }
 }
 
-/* ---------- mobile scale-down ---------- */
 
 @media (max-width: 480px) {
   :root {
