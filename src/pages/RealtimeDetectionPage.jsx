@@ -69,8 +69,16 @@ export default function RealtimeDetectionPage() {
                 return;
             }
 
-            canvas.width = 416;
-            canvas.height = 416;
+            canvas.width = 640;
+            canvas.height = 640;
+
+            ctx.drawImage(
+                video,
+                0,
+                0,
+                640,
+                640
+            );
 
             const ctx = canvas.getContext("2d");
 
@@ -177,11 +185,14 @@ export default function RealtimeDetectionPage() {
             ctx.strokeStyle = "red";
             ctx.lineWidth = 4;
 
+            const scaleX = canvas.width / 640;
+            const scaleY = canvas.height / 640;
+
             ctx.strokeRect(
-                box.x,
-                box.y,
-                box.width,
-                box.height
+                box.x * scaleX,
+                box.y * scaleY,
+                box.width * scaleX,
+                box.height * scaleY
             );
 
             ctx.fillStyle = "red";
@@ -189,10 +200,10 @@ export default function RealtimeDetectionPage() {
 
             ctx.fillText(
                 `${item.class} ${(item.confidence * 100).toFixed(1)}%`,
-                box.x,
+                box.x * scaleX,
                 Math.max(
                     20,
-                    box.y - 5
+                    box.y * scaleY - 5
                 )
             );
         });
@@ -229,7 +240,7 @@ export default function RealtimeDetectionPage() {
             top: 0,
             width: "100%",
             height: "100%",
-            objectFit: "cover",
+            objectFit: "contain",
             zIndex: 1,
         }}
     />
