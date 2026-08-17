@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { blurAiApi } from '@/services/blurAiApi.js'
-
-
+import { blurAiApi } from "@/services/blurAiApi.js";
 
 export default function RealtimeDetectionPage() {
     const videoRef = useRef(null);
@@ -10,13 +8,15 @@ export default function RealtimeDetectionPage() {
 
     const [detections, setDetections] = useState([]);
     const [isCameraReady, setIsCameraReady] = useState(false);
-    const isDetectingRef = useRef(false);
 
+    const isDetectingRef = useRef(false);
+    const isMountedRef = useRef(true);
 
     useEffect(() => {
         startCamera();
 
         return () => {
+            isMountedRef.current = false;
             stopCamera();
         };
     }, []);
@@ -37,15 +37,15 @@ export default function RealtimeDetectionPage() {
                     audio: false,
                 });
 
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
+            if (!videoRef.current) return;
 
-                videoRef.current.onloadedmetadata = () => {
-                    setIsCameraReady(true);
-                };
-            }
+            videoRef.current.srcObject = stream;
+
+            videoRef.current.onloadedmetadata = () => {
+                setIsCameraReady(true);
+            };
         } catch (error) {
-            console.error(error);
+            console.error("Camera error:", error);
         }
     };
 
@@ -69,21 +69,35 @@ export default function RealtimeDetectionPage() {
                 return;
             }
 
-            canvas.width = 416;
-            canvas.height = 416;
+            canvas.width = 640;
+            canvas.height = 640;
 
             const ctx = canvas.getContext("2d");
+
+            if (!ctx) {
+                resolve(null);
+                return;
+            }
+
+            ctx.clearRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
 
             ctx.drawImage(
                 video,
                 0,
                 0,
-                416,
-                416
+                canvas.width,
+                canvas.height
             );
 
             canvas.toBlob(
-                (blob) => resolve(blob),
+                (blob) => {
+                    resolve(blob);
+                },
                 "image/webp",
                 0.5
             );
@@ -91,16 +105,25 @@ export default function RealtimeDetectionPage() {
     };
 
     const detectFrame = async () => {
-        if (isDetectingRef.current) return;
+        if (
+            isDetectingRef.current ||
+            !isMountedRef.current
+        ) {
+            return;
+        }
 
         try {
             isDetectingRef.current = true;
 
-            const imageBlob = await captureFrame();
+            const imageBlob =
+                await captureFrame();
 
-            if (!imageBlob) return;
+            if (!imageBlob) {
+                return;
+            }
 
-            const start = performance.now();
+            const start =
+                performance.now();
 
             const result =
                 await blurAiApi.realtimePrivacy(
@@ -120,16 +143,14 @@ export default function RealtimeDetectionPage() {
 
             if (Array.isArray(result)) {
                 detectedObjects = result;
-            }
-            else if (
+            } else if (
                 Array.isArray(
                     result?.detections
                 )
             ) {
                 detectedObjects =
                     result.detections;
-            }
-            else if (result?.box) {
+            } else if (result?.box) {
                 detectedObjects = [result];
             }
 
@@ -140,19 +161,27 @@ export default function RealtimeDetectionPage() {
             drawDetections(
                 detectedObjects
             );
-
         } catch (error) {
-            console.error(error);
+            console.error(
+                "Detection error:",
+                error
+            );
         } finally {
             isDetectingRef.current = false;
 
-            setTimeout(() => {
-                detectFrame();
-            }, 50);
+            if (
+                isMountedRef.current
+            ) {
+                setTimeout(() => {
+                    detectFrame();
+                }, 50);
+            }
         }
     };
 
-    const drawDetections = (items) => {
+    const drawDetections = (
+        detections
+    ) => {
         const canvas =
             overlayCanvasRef.current;
 
@@ -161,6 +190,8 @@ export default function RealtimeDetectionPage() {
         const ctx =
             canvas.getContext("2d");
 
+        if (!ctx) return;
+
         ctx.clearRect(
             0,
             0,
@@ -168,90 +199,135 @@ export default function RealtimeDetectionPage() {
             canvas.height
         );
 
-        items.forEach((item) => {
+        const scaleX =
+            canvas.width / 640;
 
-            const box = item.box;
+        const scaleY =
+            canvas.height / 640;
 
-            if (!box) return;
+        detections.forEach(
+            (detection) => {
+                const box =
+                    detection.box;
 
-            ctx.strokeStyle = "red";
-            ctx.lineWidth = 4;
+                if (!box) return;
 
-            ctx.strokeRect(
-                box.x,
-                box.y,
-                box.width,
-                box.height
-            );
+                const x =
+                    box.x * scaleX;
 
-            ctx.fillStyle = "red";
-            ctx.font = "18px Arial";
+                const y =
+                    box.y * scaleY;
 
-            ctx.fillText(
-                `${item.class} ${(item.confidence * 100).toFixed(1)}%`,
-                box.x,
-                Math.max(
-                    20,
-                    box.y - 5
-                )
-            );
-        });
+                const width =
+                    box.width *
+                    scaleX;
+
+                const height =
+                    box.height *
+                    scaleY;
+
+                ctx.strokeStyle =
+                    "red";
+
+                ctx.lineWidth = 4;
+
+                ctx.strokeRect(
+                    x,
+                    y,
+                    width,
+                    height
+                );
+
+                ctx.fillStyle =
+                    "red";
+
+                ctx.font =
+                    "18px Arial";
+
+                ctx.fillText(
+                    `${detection.class} ${(
+                        detection.confidence *
+                        100
+                    ).toFixed(1)}%`,
+                    x,
+                    Math.max(
+                        20,
+                        y - 5
+                    )
+                );
+            }
+        );
     };
 
     return (
         <div
             style={{
-                padding: "20px",
+                padding: 20,
             }}
         >
             <h1>
-                AIShield Realtime Privacy
-                Detection
+                AIShield Realtime
+                Privacy Detection
             </h1>
 
-<div
-    style={{
-        position: "relative",
-        width: "800px",
-        height: "600px",
-        border: "1px solid #ccc",
-        overflow: "hidden",
-    }}
->
-    <video
-        ref={videoRef}
-        autoPlay
-        muted
-        playsInline
-        style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            zIndex: 1,
-        }}
-    />
+            <div
+                style={{
+                    position:
+                        "relative",
+                    width: 800,
+                    height: 600,
+                    border:
+                        "1px solid #ccc",
+                    overflow:
+                        "hidden",
+                }}
+            >
+                <video
+                    ref={videoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    style={{
+                        position:
+                            "absolute",
+                        top: 0,
+                        left: 0,
+                        width:
+                            "100%",
+                        height:
+                            "100%",
+                        objectFit:
+                            "contain",
+                        zIndex: 1,
+                    }}
+                />
 
-    <canvas
-        ref={overlayCanvasRef}
-        width={800}
-        height={600}
-        style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: "100%",
-            height: "100%",
-            zIndex: 2,
-            pointerEvents: "none",
-        }}
-    />
-</div>
+                <canvas
+                    ref={
+                        overlayCanvasRef
+                    }
+                    width={800}
+                    height={600}
+                    style={{
+                        position:
+                            "absolute",
+                        top: 0,
+                        left: 0,
+                        width:
+                            "100%",
+                        height:
+                            "100%",
+                        zIndex: 2,
+                        pointerEvents:
+                            "none",
+                    }}
+                />
+            </div>
 
             <canvas
-                ref={captureCanvasRef}
+                ref={
+                    captureCanvasRef
+                }
                 style={{
                     display: "none",
                 }}
@@ -259,11 +335,12 @@ export default function RealtimeDetectionPage() {
 
             <div
                 style={{
-                    marginTop: "20px",
+                    marginTop: 20,
                 }}
             >
                 <h3>
-                    Detection Result
+                    Detection
+                    Result
                 </h3>
 
                 <pre>
