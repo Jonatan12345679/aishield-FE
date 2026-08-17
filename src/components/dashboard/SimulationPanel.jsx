@@ -1,76 +1,168 @@
-import { PixelButton, PixelCard, PixelBadge } from '@pxlkit/ui-kit'
-import { PxlKitIcon } from '@pxlkit/core'
-import { CheckCircle, ShieldAlert } from '@pxlkit/feedback'
-import { History } from '@pxlkit/ui';
+import { useState } from 'react'
+import { Zap, Search, KeyRound, Activity, FileUp } from 'lucide-react'
+import { aiShieldApi } from '@/services/aiShieldApi'
+import '@/assets/styles/SimulationPanel.css'
 
+const ATTACK_BUTTONS = [
+  { type: 'normal', label: 'Normal Traffic', tone: 'green', icon: Activity },
+  { type: 'port_scan', label: 'Port Scan', tone: 'cyan', icon: Search },
+  { type: 'brute_force', label: 'Brute Force', tone: 'yellow', icon: KeyRound },
+  { type: 'ddos', label: 'DDoS', tone: 'rose', icon: Zap },
+  { type: 'data_exfiltration', label: 'Data Exfil', tone: 'purple', icon: FileUp },
+]
 
-export default function SimulationPanel({ onSimulateNormal, onSimulateThreat, onReset, isThreatActive }) {
+export default function SimulationPanel( {onResult}) {
+  const [runningType, setRunningType] = useState(null)
+  const [lastResult, setLastResult] = useState(null)
+  const [error, setError] = useState(null)
+
+  async function handleTrigger(attackType) {
+    if (runningType) return // cegah spam klik pas masih ada simulasi jalan
+
+    setRunningType(attackType)
+    setError(null)
+    setLastResult(null)
+
+    try {
+      const result = await aiShieldApi.triggerSimulation(attackType)
+      setLastResult(result)
+      onResult?.(result)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setRunningType(null)
+    }
+  }
+
+  const isAnyRunning = runningType !== null
+
   return (
-    <PixelCard
-      tone={isThreatActive ? 'red' : 'dark'}
-      className="p-5 border-2 border-slate-700 bg-slate-900/80 backdrop-blur"
-      >
-        {/*Header*/}
-        <div className="flex items-center justify-between     mb-4 border-b-2 border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <PixelBadge tone={isThreatActive ? 'red' : 'green'}>
-                  {isThreatActive ? 'CRITICAL MODE' : 'MONITORING'}
-                </PixelBadge>
-                <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">
-                  Simulate Traffic
-                </span>
-              </div>
-              <button 
-          onClick={onReset}
-          className="text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-mono cursor-pointer"
-        >
-          <PxlKitIcon icon={History} size={16} appearance="tinted" color="#94a3b8" />
-          <span>RESET</span>
-        </button>
+    <div className={`sim-panel ${isAnyRunning ? 'sim-panel--running' : ''}`}>
+      <span className="sim-panel__corner sim-panel__corner--tl" />
+      <span className="sim-panel__corner sim-panel__corner--tr" />
+      <span className="sim-panel__corner sim-panel__corner--bl" />
+      <span className="sim-panel__corner sim-panel__corner--br" />
+
+      <div className="sim-panel__header">
+        <div className="sim-panel__header-left">
+          <span className="sim-panel__status-dot" />
+          <span>SIMULATION.PANEL</span>
+        </div>
+        <div className="sim-panel__window-controls">
+          <span className="sim-panel__window-btn" />
+          <span className="sim-panel__window-btn" />
+          <span className="sim-panel__window-btn" />
+        </div>
       </div>
 
-      {/* Grid Tombol Simulasi */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Tombol Simulate Normal */}
-        <PixelButton 
-          onClick={onSimulateNormal}
-          variant="primary"
-          className="w-full h-auto! min-h-16! py-3! px-4! justify-start items-center gap-4 bg-emerald-900/30! border-emerald-600! hover:bg-emerald-900/50! transition-all"
-        >
-          <div className="shrink-0">
-            <PxlKitIcon icon={CheckCircle} size={24} appearance="solid" color="#34d399" />
-          </div>
-          <div className="text-left flex-1 min-w-0">
-            <div className="text-sm font-bold text-emerald-300 leading-tight">
-              SIMULATE NORMAL
-            </div>
-            <div className="text-[11px] text-emerald-400/80 font-mono leading-tight mt-0.5">
-              Generate benign activity log
-            </div>
-          </div>
-        </PixelButton>
+      <div className="sim-panel__desc">
+        <span className="sim-panel__desc-prefix">&gt;</span>
+        Trigger simulated network traffic to test AI anomaly detection
+      </div>
 
-        {/* Tombol Simulate Attack */}
-        <PixelButton 
-          onClick={onSimulateThreat}
-          disabled={isThreatActive}
-          variant="danger"
-          className="w-full h-auto! min-h-16! py-3! px-4! justify-start items-center gap-4 bg-rose-900/30! border-rose-600! hover:bg-rose-900/50! transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <div className="shrink-0">
-            <PxlKitIcon icon={ShieldAlert} size={24} appearance="solid" color="#fb7185" />
-          </div>
-          <div className="text-left flex-1 min-w-0">
-            <div className="text-sm font-bold text-rose-300 leading-tight">
-              SIMULATE ATTACK
+      <div className="sim-panel__buttons">
+        {ATTACK_BUTTONS.map((btn) => {
+          const Icon = btn.icon
+          const isThisRunning = runningType === btn.type
+          return (
+            <button
+              key={btn.type}
+              className={`sim-btn sim-btn--${btn.tone} ${
+                isThisRunning ? 'sim-btn--running' : ''
+              }`}
+              onClick={() => handleTrigger(btn.type)}
+              disabled={isAnyRunning}
+            >
+              {isThisRunning ? (
+                <>
+                  <div className="sim-btn__loader">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                  <span>RUNNING...</span>
+                </>
+              ) : (
+                <>
+                  <Icon size={14} />
+                  <span>{btn.label}</span>
+                </>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="sim-panel__console">
+        <div className="sim-panel__console-header">
+          <span>[CONSOLE.OUT]</span>
+          <span className="sim-panel__console-indicator">●</span>
+        </div>
+        <div className="sim-panel__console-body">
+          {error && (
+            <div className="sim-panel__console-error">
+              <span className="sim-panel__console-prefix">&gt;</span>
+              <span>[FATAL]</span>
+              <span className="sim-panel__console-msg">
+                Trigger failed: {error}
+              </span>
             </div>
-            <div className="text-[11px] text-rose-400/80 font-mono leading-tight mt-0.5">
-              Trigger anomaly detection
+          )}
+
+          {!error && lastResult && (
+            <>
+              <div className="sim-panel__console-line">
+                <span className="sim-panel__console-prefix">&gt;</span>
+                <span className="sim-panel__console-key">TYPE</span>
+                <span className="sim-panel__console-val">
+                  {lastResult.attack_type?.toUpperCase()}
+                </span>
+              </div>
+              <div className="sim-panel__console-line">
+                <span className="sim-panel__console-prefix">&gt;</span>
+                <span className="sim-panel__console-key">GENERATED</span>
+                <span className="sim-panel__console-val">
+                  {lastResult.total_generated} events
+                </span>
+              </div>
+              <div className="sim-panel__console-line">
+                <span className="sim-panel__console-prefix">&gt;</span>
+                <span className="sim-panel__console-key">DETECTED</span>
+                <span className="sim-panel__console-val sim-panel__console-val--highlight">
+                  {lastResult.anomalies_detected} anomalies
+                </span>
+              </div>
+              <div className="sim-panel__console-line">
+                <span className="sim-panel__console-prefix">&gt;</span>
+                <span className="sim-panel__console-key">DURATION</span>
+                <span className="sim-panel__console-val">
+                  {lastResult.duration_sec}s
+                </span>
+              </div>
+              <div className="sim-panel__console-line sim-panel__console-line--success">
+                <span className="sim-panel__console-prefix">&gt;</span>
+                <span>SIMULATION COMPLETE ✓</span>
+              </div>
+            </>
+          )}
+
+          {!error && !lastResult && !isAnyRunning && (
+            <div className="sim-panel__console-idle">
+              <span className="sim-panel__console-prefix">&gt;</span>
+                  Awaiting command...
+              <span className="sim-panel__console-cursor">_</span>
             </div>
-          </div>
-        </PixelButton>
-          </div>    
-      </PixelCard>
-      
+          )}
+
+          {isAnyRunning && (
+            <div className="sim-panel__console-line">
+              <span className="sim-panel__console-prefix">&gt;</span>
+              <span>Executing {runningType.replace('_', ' ')} simulation</span>
+              <span className="sim-panel__console-dots">...</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }

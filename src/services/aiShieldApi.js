@@ -1,20 +1,7 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
-async function request(path, options = {}) {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  })
+import { request } from './apiClient'
 
-  if (!res.ok) {
-    const body = await res.json().catch(() => null)
-    throw new Error(body?.detail || `Request gagal: ${res.status}`)
-  }
-
-  return res.json()
-}
-
-export const api = {
+export const aiShieldApi = {
   getDashboardSummary: () => request('/dashboard/summary'),
 
   getRiskScore: () => request('/dashboard/risk-score'),
@@ -30,4 +17,10 @@ export const api = {
   },
 
   getModelMetrics: () => request('/dashboard/model-metrics'),
+
+  triggerSimulation: (attackType, count) =>
+    request('/simulation/trigger', {
+      method: 'POST',
+      body: JSON.stringify({ attack_type: attackType, count: count || null }),
+    }),
 }

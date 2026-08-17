@@ -1,0 +1,388 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=JetBrains+Mono:wght@400;700&display=swap');
+
+.sim-panel {
+  --accent: #22d3ee;
+  --bg-dark: #050810;
+  --bg-main: #0a1120;
+
+  position: relative;
+  background: var(--bg-main);
+  border: 4px solid var(--accent);
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.1s ease;
+}
+
+.sim-panel--running {
+  animation: panel-running-pulse 2s infinite;
+}
+
+@keyframes panel-running-pulse {
+  0%, 100% {
+    box-shadow:
+      8px 8px 0 rgba(0, 0, 0, 0.8),
+      0 0 20px rgba(34, 211, 238, 0.15);
+  }
+  50% {
+    box-shadow:
+      8px 8px 0 rgba(0, 0, 0, 0.8),
+      0 0 30px rgba(34, 211, 238, 0.35);
+  }
+}
+
+.sim-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+.sim-panel__corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  z-index: 6;
+}
+.sim-panel__corner--tl { top: -4px; left: -4px; }
+.sim-panel__corner--tr { top: -4px; right: -4px; }
+.sim-panel__corner--bl { bottom: -4px; left: -4px; }
+.sim-panel__corner--br { bottom: -4px; right: -4px; }
+
+.sim-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--accent);
+  color: var(--bg-dark);
+  padding: 6px 10px;
+  font-family: 'Press Start 2P', 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.sim-panel__header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sim-panel__status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--bg-dark);
+  animation: status-blink 1.5s infinite;
+}
+
+.sim-panel--running .sim-panel__status-dot {
+  animation: status-fast-blink 0.4s infinite;
+}
+
+@keyframes status-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+@keyframes status-fast-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.2; }
+}
+
+.sim-panel__window-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.sim-panel__window-btn {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--bg-dark);
+  background: transparent;
+}
+
+.sim-panel__window-btn:first-child { background: var(--bg-dark); }
+
+
+.sim-panel__desc {
+  padding: 16px 16px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #8fa3bd;
+  line-height: 1.5;
+  position: relative;
+  z-index: 2;
+}
+
+.sim-panel__desc-prefix {
+  color: var(--accent);
+  margin-right: 8px;
+}
+
+.sim-panel__buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.sim-btn {
+  --btn-color: #8fa3bd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 12px;
+  border: 3px solid var(--btn-color);
+  background: transparent;
+  color: var(--btn-color);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.8);
+  text-transform: uppercase;
+}
+
+.sim-btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.9);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.sim-btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+}
+
+.sim-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.sim-btn--green { --btn-color: #4ade80; }
+.sim-btn--cyan { --btn-color: #22d3ee; }
+.sim-btn--yellow { --btn-color: #facc15; }
+.sim-btn--rose { --btn-color: #ff5c8a; }
+.sim-btn--purple { --btn-color: #b06df5; }
+
+.sim-btn--running {
+  opacity: 1 !important;
+  background: rgba(34, 211, 238, 0.08);
+  animation: btn-running-flash 1s infinite;
+}
+
+@keyframes btn-running-flash {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.7; }
+}
+
+
+.sim-btn__loader {
+  display: flex;
+  gap: 3px;
+}
+
+.sim-btn__loader span {
+  width: 6px;
+  height: 6px;
+  background: var(--btn-color);
+  animation: pixel-bounce 0.7s infinite ease-in-out;
+}
+
+.sim-btn__loader span:nth-child(2) { animation-delay: 0.1s; }
+.sim-btn__loader span:nth-child(3) { animation-delay: 0.2s; }
+
+@keyframes pixel-bounce {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+
+.sim-panel__console {
+  margin: 0 16px 16px;
+  background: var(--bg-dark);
+  border: 3px solid #1c2940;
+  display: flex;
+  flex-direction: column;
+  min-height: 140px;
+  position: relative;
+  z-index: 2;
+}
+
+.sim-panel__console-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  background: #1c2940;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #8fa3bd;
+  letter-spacing: 1px;
+}
+
+.sim-panel__console-indicator {
+  color: #4ade80;
+  font-size: 8px;
+  animation: status-blink 1.5s infinite;
+}
+
+.sim-panel--running .sim-panel__console-indicator {
+  color: #facc15;
+  animation: status-fast-blink 0.4s infinite;
+}
+
+.sim-panel__console-body {
+  flex: 1;
+  padding: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sim-panel__console-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.sim-panel__console-line--success {
+  color: #4ade80;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding-top: 6px;
+  border-top: 1px dashed #1c2940;
+}
+
+.sim-panel__console-prefix {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.sim-panel__console-key {
+  color: #8fa3bd;
+  min-width: 80px;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.sim-panel__console-val {
+  color: #e2e8f0;
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+
+.sim-panel__console-val--highlight {
+  color: #ff5c8a;
+  text-shadow: 0 0 8px rgba(255, 92, 138, 0.5);
+}
+
+.sim-panel__console-idle {
+  color: #8fa3bd;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sim-panel__console-cursor {
+  color: var(--accent);
+  animation: cursor-blink 0.9s infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.sim-panel__console-dots {
+  animation: dots-loading 1.2s infinite;
+  color: #8fa3bd;
+}
+
+@keyframes dots-loading {
+  0%, 20% { content: ''; opacity: 0.4; }
+  40% { opacity: 0.7; }
+  80%, 100% { opacity: 1; }
+}
+
+.sim-panel__console-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ff5c8a;
+  padding: 6px 8px;
+  background: rgba(255, 92, 138, 0.08);
+  border-left: 3px solid #ff5c8a;
+  line-height: 1.4;
+}
+
+.sim-panel__console-error span:nth-child(2) {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+
+.sim-panel__console-msg {
+  color: #fff;
+  font-size: 11px;
+}
+
+@media (max-width: 768px) {
+  .sim-panel__buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .sim-btn {
+    padding: 12px;
+    font-size: 8px;
+  }
+
+  .sim-panel__console-key {
+    min-width: 70px;
+    font-size: 8px;
+  }
+
+  .sim-panel__console-val {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sim-panel__buttons {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .sim-panel__desc {
+    font-size: 10px;
+    padding: 12px 12px 0;
+  }
+
+  .sim-panel__console {
+    margin: 0 12px 12px;
+  }
+}

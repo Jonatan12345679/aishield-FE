@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { api } from '../../lib/api'
+import { aiShieldApi } from '@/services/aiShieldApi'
 import '@/assets/styles/AnomalyChart.css'
 
 const ATTACK_COLORS = {
@@ -43,7 +43,7 @@ export default function AnomalyChart() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    api
+    aiShieldApi
       .getDashboardSummary()
       .then((summary) => {
         const chartData = Object.entries(summary.attack_type_distribution)

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { api } from '../../lib/api'
+import { aiShieldApi } from '@/services/aiShieldApi'
 import '@/assets/styles/LogStream.css'
 
 const RISK_LABEL = {
@@ -32,7 +32,7 @@ export default function LogStream({ anomalyOnly = false, limit = 20 }) {
     let cancelled = false
 
     function fetchEvents() {
-      api
+      aiShieldApi
         .getEvents({ page: 1, pageSize: limit, anomalyOnly })
         .then((res) => {
           if (!cancelled) {

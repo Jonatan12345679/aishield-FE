@@ -30,7 +30,7 @@ import { PxlKitIcon, PixelToast } from '@pxlkit/core'
 import { CheckCircle } from '@pxlkit/feedback'
 
 import Header from '@/components/layout/Header'
-import { scanPrivacy, blurPrivacy } from '@/api/privacyApi'
+import { blurAiApi } from '@/services/blurAiApi.js'
 
 import '@/assets/styles/BlurAiPage.css'
 
@@ -151,7 +151,7 @@ export default function BlurAiPage() {
       setPendingAction('scan')
       setError(null)
       const start = Date.now()
-      const result = await scanPrivacy(currentFile)
+      const result = await blurAiApi.scanPrivacy(currentFile)
       const elapsed = Date.now() - start
       if (elapsed < 1200) await delay(1200 - elapsed)
       setScanResult(result)
@@ -170,7 +170,7 @@ export default function BlurAiPage() {
       setPendingAction('blur')
       setError(null)
       const start = Date.now()
-      const result = await blurPrivacy(currentFile)
+      const result = await blurAiApi.blurPrivacy(currentFile)
       const elapsed = Date.now() - start
       if (elapsed < 1200) await delay(1200 - elapsed)
       setBlurResult(result)
@@ -294,7 +294,7 @@ export default function BlurAiPage() {
                     <button
                       type="button"
                       onClick={triggerSelectFile}
-                      className="pixel-slot w-full min-h-[380px] flex flex-col items-center justify-center text-center group"
+                      className="pixel-slot w-full min-h-95 flex flex-col items-center justify-center text-center group"
                     >
                       <input
                         ref={fileInputRef}
@@ -317,7 +317,7 @@ export default function BlurAiPage() {
                   ) : (
                     <div className="space-y-4">
                       <div className="flex justify-between items-center pixel-strip px-3 py-2">
-                        <span className="font-pixel-body text-lg truncate text-slate-300 max-w-[250px] sm:max-w-md">
+                        <span className="font-pixel-body text-lg truncate text-slate-300 max-w-62.5 sm:max-w-md">
                           FILE: {currentFile.name}
                         </span>
                         <PixelButton
@@ -331,7 +331,7 @@ export default function BlurAiPage() {
                         </PixelButton>
                       </div>
 
-                      <div className="relative pixel-screen min-h-[320px] max-h-[500px] flex items-center justify-center">
+                      <div className="relative pixel-screen min-h-80 max-h-125 flex items-center justify-center">
                         <span className="pixel-corner pixel-corner-tl" />
                         <span className="pixel-corner pixel-corner-tr" />
                         <span className="pixel-corner pixel-corner-bl" />
@@ -339,7 +339,7 @@ export default function BlurAiPage() {
                         <img
                           src={displayedImage}
                           alt="Preview"
-                          className="max-h-[480px] w-auto object-contain pixel-render"
+                          className="max-h-120 w-auto object-contain pixel-render"
                         />
                         {loading && (
                           <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-4">

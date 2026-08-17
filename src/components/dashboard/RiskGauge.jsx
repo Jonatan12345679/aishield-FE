@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api } from '../../lib/api'
+import { aiShieldApi } from '@/services/aiShieldApi'
 import '@/assets/styles/RiskGauge.css'
 
 const REFRESH_INTERVAL_MS = 5000
@@ -29,7 +29,7 @@ export default function RiskGauge() {
     let cancelled = false
 
     function fetchRisk() {
-      api
+      aiShieldApi
         .getRiskScore()
         .then((res) => {
           if (!cancelled) {

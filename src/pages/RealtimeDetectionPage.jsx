@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { realtimePrivacy } from "../api/privacyApi";
+import { blurAiApi } from '@/services/blurAiApi.js'
+
 
 export default function RealtimeDetectionPage() {
     const videoRef = useRef(null);
@@ -105,7 +106,7 @@ export default function RealtimeDetectionPage() {
 
             if (!imageBlob) return;
 
-            const result = await realtimePrivacy(
+            const result = await blurAiApi.realtimePrivacy(
                 imageBlob
             );
 
