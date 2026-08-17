@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { blurAiApi } from '@/services/blurAiApi.js'
 
 
+
 export default function RealtimeDetectionPage() {
     const videoRef = useRef(null);
     const overlayCanvasRef = useRef(null);
@@ -9,7 +10,18 @@ export default function RealtimeDetectionPage() {
 
     const [detections, setDetections] = useState([]);
     const [isCameraReady, setIsCameraReady] = useState(false);
-    const [isDetecting, setIsDetecting] = useState(false);
+    const isDetectingRef = useRef(false);
+
+    const start = performance.now();
+
+    const result =
+        await blurAiApi.realtimePrivacy(imageBlob);
+
+    console.log(
+        "Inference:",
+        performance.now() - start,
+        "ms"
+    );
 
     useEffect(() => {
         startCamera();
@@ -22,11 +34,7 @@ export default function RealtimeDetectionPage() {
     useEffect(() => {
         if (!isCameraReady) return;
 
-        const interval = setInterval(() => {
-            detectFrame();
-        }, 300);
-
-        return () => clearInterval(interval);
+        detectFrame();
     }, [isCameraReady]);
 
     const startCamera = async () => {
@@ -71,8 +79,8 @@ export default function RealtimeDetectionPage() {
                 return;
             }
 
-            canvas.width = 640;
-            canvas.height = 640;
+            canvas.width = 416;
+            canvas.height = 416;
 
             const ctx =
                 canvas.getContext("2d");
@@ -86,20 +94,31 @@ export default function RealtimeDetectionPage() {
             );
 
             canvas.toBlob(
-                (blob) => {
-                    resolve(blob);
-                },
-                "image/jpeg",
-                0.8
+                (blob) => resolve(blob),
+                "image/webp",
+                0.5
             );
         });
     };
 
     const detectFrame = async () => {
-        if (isDetecting) return;
+        if (isDetectingRef.current) return;
 
+
+        const start = performance.now();
+
+        const result =
+            await blurAiApi.realtimePrivacy(imageBlob);
+
+        console.log(
+            "Inference:",
+            performance.now() - start,
+            "ms"
+        );
+        
         try {
-            setIsDetecting(true);
+            isDetectingRef.current = true;
+
 
             const imageBlob =
                 await captureFrame();
@@ -152,7 +171,11 @@ export default function RealtimeDetectionPage() {
         } catch (error) {
             console.error(error);
         } finally {
-            setIsDetecting(false);
+            isDetectingRef.current = false;
+
+            requestAnimationFrame(() => {
+                detectFrame();
+            });
         }
     };
 
