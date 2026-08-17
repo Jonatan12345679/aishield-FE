@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { aiShieldApi } from '@/services/aiShieldApi'
 import '@/assets/styles/LogStream.css'
+import { useWebSocket } from '@/hooks/useWebSocket'
 
 const RISK_LABEL = {
   low: 'LOW',
@@ -26,6 +27,7 @@ export default function LogStream({ anomalyOnly = false, limit = 20 }) {
   const [events, setEvents] = useState(null)
   const [error, setError] = useState(null)
   const [lastRefresh, setLastRefresh] = useState(null)
+  const {lastMessage} = useWebSocket
   const bodyRef = useRef(null)
 
   useEffect(() => {
@@ -54,6 +56,14 @@ export default function LogStream({ anomalyOnly = false, limit = 20 }) {
       clearInterval(interval)
     }
   }, [anomalyOnly, limit])
+
+  useEffect(() => {
+    if (!lastMessage || lastMessage.type !== 'new_events') return
+    api
+      .getEvents({ page: 1, pageSize: limit, anomalyOnly })
+      .then((res) => setEvents(res.events))
+      .catch(() => {}) // biarin polling interval yang handle kalau ini gagal
+  }, [lastMessage, anomalyOnly, limit])
 
   return (
     <div className="log-stream">

@@ -12,16 +12,6 @@ export default function RealtimeDetectionPage() {
     const [isCameraReady, setIsCameraReady] = useState(false);
     const isDetectingRef = useRef(false);
 
-    const start = performance.now();
-
-    const result =
-        await blurAiApi.realtimePrivacy(imageBlob);
-
-    console.log(
-        "Inference:",
-        performance.now() - start,
-        "ms"
-    );
 
     useEffect(() => {
         startCamera();
@@ -82,15 +72,14 @@ export default function RealtimeDetectionPage() {
             canvas.width = 416;
             canvas.height = 416;
 
-            const ctx =
-                canvas.getContext("2d");
+            const ctx = canvas.getContext("2d");
 
             ctx.drawImage(
                 video,
                 0,
                 0,
-                640,
-                640
+                416,
+                416
             );
 
             canvas.toBlob(
@@ -104,60 +93,43 @@ export default function RealtimeDetectionPage() {
     const detectFrame = async () => {
         if (isDetectingRef.current) return;
 
-
-        const start = performance.now();
-
-        const result =
-            await blurAiApi.realtimePrivacy(imageBlob);
-
-        console.log(
-            "Inference:",
-            performance.now() - start,
-            "ms"
-        );
-        
         try {
             isDetectingRef.current = true;
 
-
-            const imageBlob =
-                await captureFrame();
+            const imageBlob = await captureFrame();
 
             if (!imageBlob) return;
 
-            const result = await blurAiApi.realtimePrivacy(
-                imageBlob
-            );
+            const start = performance.now();
 
-            console.log(result);
+            const result =
+                await blurAiApi.realtimePrivacy(
+                    imageBlob
+                );
+
+            console.log(
+                "Inference:",
+                (
+                    performance.now() -
+                    start
+                ).toFixed(0),
+                "ms"
+            );
 
             let detectedObjects = [];
 
             if (Array.isArray(result)) {
                 detectedObjects = result;
             }
-            else if (Array.isArray(result?.detections)) {
-                detectedObjects = result.detections;
-            }
-            else if (result?.box) {
-                detectedObjects = [result];
-            }
-
-            console.log(
-                "DETECTED:",
-                detectedObjects
-            );
-
-            // let detectedObjects = [];
-
-            if (
+            else if (
                 Array.isArray(
                     result?.detections
                 )
             ) {
                 detectedObjects =
                     result.detections;
-            } else if (result?.box) {
+            }
+            else if (result?.box) {
                 detectedObjects = [result];
             }
 
@@ -168,14 +140,15 @@ export default function RealtimeDetectionPage() {
             drawDetections(
                 detectedObjects
             );
+
         } catch (error) {
             console.error(error);
         } finally {
             isDetectingRef.current = false;
 
-            requestAnimationFrame(() => {
+            setTimeout(() => {
                 detectFrame();
-            });
+            }, 50);
         }
     };
 
