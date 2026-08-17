@@ -95,3 +95,7 @@ export function scanPrivacy(file, options) {
 export function blurPrivacy(file, options) {
   return postImage('/blur', file, options)
 }
+
+export function realtimePrivacy(file, options) {
+  return postImage('/realtime', file, options)
+}
