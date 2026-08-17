@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { aiShieldApi } from '@/services/aiShieldApi'
 import '@/assets/styles/RiskGauge.css'
+import { useWebSocket } from '@/hooks/useWebSocket'
 
 const REFRESH_INTERVAL_MS = 5000
 
@@ -24,6 +25,7 @@ export default function RiskGauge() {
   const [risk, setRisk] = useState(null)
   const [error, setError] = useState(null)
   const [prevScore, setPrevScore] = useState(null)
+  const {lastMessage} = useWebSocket
 
   useEffect(() => {
     let cancelled = false
@@ -51,6 +53,19 @@ export default function RiskGauge() {
       clearInterval(interval)
     }
   }, [risk?.score])
+
+  useEffect(() => {
+    if (!lastMessage || lastMessage.type !== 'new_events') return
+    api.getRiskScore().then(setRisk).catch(() => {})
+  }, [lastMessage])
+ 
+  if (error) {
+    return <div>Gagal narik risk score: {error}</div>
+  }
+ 
+  if (!risk) {
+    return <div>Loading...</div>
+  }
 
   const isThreatActive = risk?.level === 'elevated' || risk?.level === 'critical'
   const levelColor = LEVEL_COLORS[risk?.level] || '#8fa3bd'
@@ -118,13 +133,11 @@ export default function RiskGauge() {
       className={`risk-gauge ${isThreatActive ? 'risk-gauge--threat' : ''}`}
       style={{ '--level-color': levelColor }}
     >
-      {/* Corner Decorations */}
       <span className="risk-gauge__corner risk-gauge__corner--tl" />
       <span className="risk-gauge__corner risk-gauge__corner--tr" />
       <span className="risk-gauge__corner risk-gauge__corner--bl" />
       <span className="risk-gauge__corner risk-gauge__corner--br" />
 
-      {/* Window Header */}
       <div className="risk-gauge__header">
         <div className="risk-gauge__header-left">
           <span className="risk-gauge__status-dot" />
@@ -137,10 +150,8 @@ export default function RiskGauge() {
         </div>
       </div>
 
-      {/* Gauge Display */}
       <div className="risk-gauge__body">
         <div className="risk-gauge__display">
-          {/* Circular Progress Ring */}
           <svg className="risk-gauge__ring" viewBox="0 0 200 200">
             <circle
               className="risk-gauge__ring-bg"
@@ -163,7 +174,6 @@ export default function RiskGauge() {
             />
           </svg>
           
-          {/* Score Value */}
           <div className="risk-gauge__score-container">
             <span className="risk-gauge__score">{risk.score}</span>
             {scoreChange !== 0 && (
@@ -174,7 +184,6 @@ export default function RiskGauge() {
           </div>
         </div>
 
-        {/* Level Label */}
         <div className="risk-gauge__level">
           <span className="risk-gauge__level-text">
             {LEVEL_LABELS[risk.level] || risk.level.toUpperCase()}
@@ -186,8 +195,7 @@ export default function RiskGauge() {
           )}
         </div>
       </div>
-
-      {/* Stats Footer */}
+      
       <div className="risk-gauge__footer">
         <div className="risk-gauge__stats">
           <div className="risk-gauge__stat">
