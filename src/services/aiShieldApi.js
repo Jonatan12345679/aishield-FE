@@ -18,9 +18,14 @@ export const aiShieldApi = {
 
   getModelMetrics: () => request('/dashboard/model-metrics'),
 
+
   triggerSimulation: (attackType, count) =>
     request('/simulation/trigger', {
       method: 'POST',
       body: JSON.stringify({ attack_type: attackType, count: count || null }),
     }),
+
+    explainEvent(eventId) {
+      return request (`/dashboard/events/$events`)
+    }
 }

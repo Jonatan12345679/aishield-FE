@@ -401,6 +401,20 @@
   color: var(--accent);
 }
 
+.log-row--clickable {
+  cursor: pointer;
+}
+
+.log-row--clickable:hover {
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.log-row__explain {
+  padding: 0 12px 12px 12px;
+  background: rgba(34, 211, 238, 0.03);
+  border-bottom: 1px solid rgba(28, 41, 64, 0.4);
+}
+
 @media (max-width: 900px) {
   .log-col--attack { width: 90px; }
   .log-col--score { width: 50px; }

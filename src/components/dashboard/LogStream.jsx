@@ -1,7 +1,10 @@
-import { useEffect, useState, useRef } from 'react'
+import { Fragment,useEffect, useState, useRef } from 'react'
 import { aiShieldApi } from '@/services/aiShieldApi'
-import '@/assets/styles/LogStream.css'
 import { useWebSocket } from '@/hooks/useWebSocket'
+import ExplainPanel from './ExplainPanel'
+import '@/assets/styles/LogStream.css'
+
+
 
 const RISK_LABEL = {
   low: 'LOW',
@@ -27,7 +30,8 @@ export default function LogStream({ anomalyOnly = false, limit = 20 }) {
   const [events, setEvents] = useState(null)
   const [error, setError] = useState(null)
   const [lastRefresh, setLastRefresh] = useState(null)
-  const {lastMessage} = useWebSocket
+  const [explainId, setExplainId] = useState(null) 
+  const {lastMessage} = useWebSocket()
   const bodyRef = useRef(null)
 
   useEffect(() => {
@@ -59,7 +63,7 @@ export default function LogStream({ anomalyOnly = false, limit = 20 }) {
 
   useEffect(() => {
     if (!lastMessage || lastMessage.type !== 'new_events') return
-    api
+      aiShieldApi
       .getEvents({ page: 1, pageSize: limit, anomalyOnly })
       .then((res) => setEvents(res.events))
       .catch(() => {}) // biarin polling interval yang handle kalau ini gagal
@@ -128,7 +132,12 @@ export default function LogStream({ anomalyOnly = false, limit = 20 }) {
         {!error && events && events.length > 0 && (
           <>
             {events.map((e, idx) => (
-              <div key={e.id} className={`log-row ${idx % 2 === 0 ? 'log-row--even' : ''}`}>
+               <Fragment key={e.id}>
+              <div
+                  className={`log-row log-row--clickable ${idx % 2 === 0 ? 'log-row--even' : ''}`}
+                  onClick={() => setExplainId((prev) => (prev === e.id ? null : e.id))}
+                  title="Klik untuk penjelasan AI"
+                >
                 <span className="log-col log-col--time log-row__time">
                   {formatTime(e.timestamp)}
                 </span>
@@ -157,6 +166,12 @@ export default function LogStream({ anomalyOnly = false, limit = 20 }) {
                   {e.anomaly_score != null ? e.anomaly_score.toFixed(3) : '—'}
                 </span>
               </div>
+                {explainId === e.id && (
+                <div className="log-row__explain">
+                  <ExplainPanel eventId={e.id} />
+                </div>
+              )}
+            </Fragment>
             ))}
             <div className="log-row log-row--cursor">
               <span className="log-cursor">█</span>
