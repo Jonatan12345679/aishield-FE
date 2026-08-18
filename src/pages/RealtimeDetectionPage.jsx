@@ -179,6 +179,17 @@ export default function RealtimeDetectionPage() {
         const displayScaleX = displayWidth / videoWidth;
         const displayScaleY = displayHeight / videoHeight;
 
+
+        const coverScale = Math.max(
+            displayWidth / videoWidth,
+            displayHeight / videoHeight
+        );
+        const renderedVideoWidth = videoWidth * coverScale;
+        const renderedVideoHeight = videoHeight * coverScale;
+        const offsetX = (displayWidth - renderedVideoWidth) / 2;
+        const offsetY = (displayHeight - renderedVideoHeight) / 2;
+
+        
         items.forEach((item) => {
             const box = item?.box;
             if (!box) return;
@@ -188,10 +199,10 @@ export default function RealtimeDetectionPage() {
             const videoWidthBox = box.width * modelToVideo;
             const videoHeightBox = box.height * modelToVideo;
 
-            const x = videoX * displayScaleX;
-            const y = videoY * displayScaleY;
-            const width = videoWidthBox * displayScaleX;
-            const height = videoHeightBox * displayScaleY;
+            const x = offsetX + videoX * coverScale;
+            const y = offsetY + videoY * coverScale;
+            const width = videoWidthBox * coverScale;
+            const height = videoHeightBox * coverScale;
 
             const meta = classMeta(item.class);
 
