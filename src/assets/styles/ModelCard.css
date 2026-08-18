@@ -1,0 +1,387 @@
+.model-card {
+  --accent: #b06df5;
+  --accent-alt: #22d3ee;
+  --bg-dark: #050810;
+  --bg-main: #0a1120;
+
+  position: relative;
+  background: var(--bg-main);
+  border: 4px solid var(--accent);
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+}
+
+.model-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+.model-card__corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  z-index: 6;
+}
+.model-card__corner--tl { top: -4px; left: -4px; }
+.model-card__corner--tr { top: -4px; right: -4px; }
+.model-card__corner--bl { bottom: -4px; left: -4px; }
+.model-card__corner--br { bottom: -4px; right: -4px; }
+
+.model-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--accent);
+  color: var(--bg-dark);
+  padding: 6px 10px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.model-card__header-left,
+.model-card__header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.model-card__title {
+  color: var(--bg-dark);
+  opacity: 0.7;
+  font-size: 8px;
+}
+
+.model-card__status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--bg-dark);
+  animation: mc-blink 1.5s infinite;
+}
+
+@keyframes mc-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+.model-card__toggle {
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+
+.model-card__window-controls { display: flex; gap: 4px; }
+.model-card__window-btn { width: 10px; height: 10px; border: 2px solid var(--bg-dark); }
+
+/* untuk Summary (collapsed state) */
+.model-card__summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 12px;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.model-card__summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.model-card__summary-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  color: #8fa3bd;
+  letter-spacing: 1px;
+}
+
+.model-card__summary-value {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  color: #e2e8f0;
+  line-height: 1;
+}
+
+.model-card__summary-value--accent {
+  color: var(--accent-alt);
+  text-shadow: 0 0 8px var(--accent-alt);
+}
+
+.model-card__summary-value--hint {
+  color: var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  animation: mc-hint 1.5s infinite;
+}
+
+@keyframes mc-hint {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+.model-card__summary-divider {
+  color: #1c2940;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+}
+
+/* Body (expanded state) */
+.model-card__body {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  z-index: 2;
+  animation: mc-slide 0.25s ease;
+}
+
+@keyframes mc-slide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.model-card__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.model-card__section-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: 1px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed #1c2940;
+}
+
+.model-card__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.model-card__stat {
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid #1c2940;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.model-card__stat-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  color: #8fa3bd;
+  letter-spacing: 1px;
+}
+
+.model-card__stat-value {
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  color: var(--accent-alt);
+  line-height: 1;
+}
+
+.model-card__bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.model-card__bar-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 52px 48px;  /* tambah kolom detail */
+  align-items: center;
+  gap: 10px;
+}
+
+.model-card__bar-detail {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #8fa3bd;
+  text-align: right;
+}
+
+.model-card__cm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.model-card__cm-cell {
+  padding: 10px;
+  border: 2px solid #1c2940;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.model-card__cm-cell--good { border-color: rgba(74, 222, 128, 0.5); }
+.model-card__cm-cell--bad  { border-color: rgba(255, 92, 138, 0.5); }
+
+.model-card__cm-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #8fa3bd;
+}
+
+.model-card__cm-cell--good .model-card__cm-label { color: #4ade80; }
+.model-card__cm-cell--bad  .model-card__cm-label { color: #ff5c8a; }
+
+.model-card__cm-value {
+  font-family: 'VT323', monospace;
+  font-size: 24px;
+  color: #e2e8f0;
+  line-height: 1;
+}
+
+.model-card__cm-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #3a4a63;
+}
+
+.model-card__bar-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #e2e8f0;
+  letter-spacing: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model-card__bar {
+  height: 12px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 2px solid #1c2940;
+  overflow: hidden;
+}
+
+.model-card__bar-fill {
+  height: 100%;
+  background-color: var(--accent-alt);
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent 6px,
+    rgba(5, 8, 16, 0.9) 6px,
+    rgba(5, 8, 16, 0.9) 8px
+  );
+  transition: width 0.6s ease;
+}
+
+.model-card__bar-fill--alt {
+  background-color: var(--accent);
+}
+
+.model-card__bar-pct {
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  color: var(--accent-alt);
+  text-align: right;
+  line-height: 1;
+}
+
+.model-card__note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #8fa3bd;
+  line-height: 1.5;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid var(--accent);
+}
+
+.model-card__footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-top: 2px solid #1c2940;
+  background: rgba(0, 0, 0, 0.3);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #8fa3bd;
+  letter-spacing: 1px;
+}
+
+.model-card__footer span:last-child {
+  color: var(--accent-alt);
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+}
+
+.model-card__error,
+.model-card__loading {
+  padding: 20px;
+  text-align: center;
+}
+
+.model-card__error {
+  border: 2px solid #ff5c8a;
+  background: rgba(255, 92, 138, 0.08);
+  color: #ff5c8a;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  position: relative;
+}
+
+.model-card__error-tag {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: var(--bg-main);
+  padding: 0 4px;
+}
+
+.model-card__loading-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: #8fa3bd;
+  letter-spacing: 2px;
+  animation: mc-blink 1.2s infinite;
+}
+
+@media (max-width: 768px) {
+  .model-card__stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .model-card__summary {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .model-card__bar-row {
+    grid-template-columns: 90px 1fr 40px;
+  }
+  .model-card__bar-label {
+    font-size: 6px;
+  }
+  .model-card__bar-detail { display: none; }
+}

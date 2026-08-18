@@ -10,6 +10,7 @@ import SimulationPanel from '@/components/dashboard/SimulationPanel'
 import AlertBanner from '@/components/alerts/AlertBanner'
 import AlertToast from '@/components/alerts/AlertToast'
 import TopAttackers from '@/components/dashboard/TopAttackers'
+import ModelCard from '@/components/dashboard/ModelCard'
 import '@/assets/styles/AiShieldPage.css'
 import { useWebSocket } from '@/hooks/useWebSocket' 
 
@@ -154,10 +155,13 @@ export default function AiShieldPage() {
             <AnomalyChart />
             <LogStream anomalyOnly={false} limit={20} />
           </div>
-
-          {/* timeline deteksi + attackers */}
+          
+          {/* timeline deteksi + attackers + model card */}
           <div className="aishield-row aishield-row--1-2">
-            <TopAttackers />
+            <div className="aishield-col">
+              <TopAttackers />
+              <ModelCard />
+            </div>
             <ThreatTimeline />
           </div>
         </main>

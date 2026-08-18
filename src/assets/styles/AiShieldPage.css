@@ -245,6 +245,13 @@
   grid-template-columns: 1fr 1.6fr;
 }
 
+.aishield-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
 .aishield-hero__chip--cyan   { --chip: #22d3ee; }
 .aishield-hero__chip--yellow { --chip: #facc15; }
 .aishield-hero__chip--rose   { --chip: #ff5c8a; }
@@ -270,6 +277,10 @@
 }
 
 @media (max-width: 1024px) {
+  .aishield-col {
+    gap: 16px;
+  }
+
   .aishield-row--3col {
     grid-template-columns: 1fr;
   }
