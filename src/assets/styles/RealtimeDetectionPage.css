@@ -1,0 +1,339 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+.font-pixel-display { font-family: 'Press Start 2P', monospace; letter-spacing: 0.02em; }
+.font-pixel-body { font-family: 'VT323', monospace; letter-spacing: 0.01em; }
+
+.pc-page {
+  min-height: 100vh;
+  width: 100%;
+  padding: 24px 16px 56px;
+  box-sizing: border-box;
+  background: #14150f;
+  background-image: radial-gradient(circle at 50% 0%, #201f18 0%, #0d0d09 70%);
+  display: flex;
+  justify-content: center;
+}
+.pc-page-inner { width: 100%; max-width: 400px; }
+
+/* ===== STAGE LAYOUT ===== */
+.pc-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pc-stage-camera {
+  width: 100%;
+}
+
+.pc-stage-output {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== BODY KAMERA ===== */
+.pc-camera {
+  position: relative;
+  background: linear-gradient(180deg, #ede1cd 0%, #d8c9ab 100%);
+  border-radius: 14px;
+  padding: 16px 18px 28px;
+  box-shadow: 0 8px 0 0 #a4926c, 0 16px 26px rgba(0,0,0,0.5);
+}
+
+.pc-camera-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pc-tally {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #6b3030;
+  flex-shrink: 0;
+}
+.pc-tally-on {
+  background: #ff4d4d;
+  box-shadow: 0 0 6px 1px #ff4d4d99;
+  animation: pc-blink 2.4s steps(1) infinite;
+}
+
+.pc-stripe {
+  margin-left: auto;
+  display: flex;
+  gap: 2px;
+}
+.pc-stripe span { width: 6px; height: 14px; }
+.pc-stripe span:nth-child(1) { background: #1e63c9; }
+.pc-stripe span:nth-child(2) { background: #d94141; }
+.pc-stripe span:nth-child(3) { background: #f0c419; }
+.pc-stripe span:nth-child(4) { background: #4caf6b; }
+
+/* ===== VIEWFINDER ===== */
+.pc-viewfinder-bezel {
+  position: relative;
+  background: #2b2a28;
+  border-radius: 8px;
+  padding: 14px;
+  box-shadow: inset 0 0 0 2px #1a1917, inset 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.pc-lens-ring {
+  position: absolute;
+  top: -10px;
+  right: 18px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid #706a5c;
+  background: #14150f;
+}
+
+.pc-viewfinder {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: #000;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.pc-viewfinder-video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.pc-viewfinder::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px,
+    transparent 1px, transparent 3px
+  );
+}
+
+.pc-viewfinder-overlay {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.pc-viewfinder-boot {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #0d0d09;
+  z-index: 4;
+}
+
+.pc-viewfinder-flash {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.82);
+  z-index: 5;
+}
+
+/* ===== LCD STRIP ===== */
+.pc-lcd-strip {
+  display: flex;
+  justify-content: space-between;
+  background: #14150f;
+  color: #8bac0f;
+  font-size: 8px;
+  padding: 8px 10px;
+  margin-top: 10px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px #33382b;
+}
+
+/* ===== SHUTTER ===== */
+.pc-shutter {
+  position: absolute;
+  top: 16px;
+  right: -14px;
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  border: 3px solid #c9beA6;
+  background: radial-gradient(circle at 35% 30%, #ff6b6b, #b23a3a);
+  color: #fff0f0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 0 0 rgba(0,0,0,0.35), 0 6px 12px rgba(0,0,0,0.35);
+}
+.pc-shutter:active { transform: translateY(3px); box-shadow: 0 1px 0 0 rgba(0,0,0,0.35); }
+.pc-shutter:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ===== SLOT FILM ===== */
+.pc-film-slot {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 6px;
+  background: #14150f;
+  border-radius: 3px;
+  box-shadow: inset 0 2px 3px rgba(0,0,0,0.6);
+}
+
+/* ===== OUTPUT SLOT (kanan / bawah) ===== */
+.pc-output-slot {
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pc-output-empty {
+  text-align: center;
+  color: #5a5240;
+  font-size: 15px;
+  border: 2px dashed #33382b;
+  border-radius: 8px;
+  padding: 24px 16px;
+  width: 100%;
+}
+
+/* ===== FOTO KELUAR (POLAROID) ===== */
+.pc-polaroid {
+  width: 100%;
+  margin: 0;
+  background: #f4efe4;
+  padding: 10px 10px 14px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.45);
+  opacity: 0;
+  transform: translateY(-30px) rotate(-2deg);
+  transition: transform 0.5s cubic-bezier(.2,.8,.2,1), opacity 0.4s ease;
+}
+.pc-polaroid-out {
+  opacity: 1;
+  transform: translateY(0) rotate(-2deg);
+}
+
+.pc-polaroid-photo {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #333;
+  overflow: hidden;
+}
+
+.pc-polaroid-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pc-polaroid-img.pc-developing {
+  filter: grayscale(1) blur(6px) brightness(0.55) contrast(0.8);
+}
+.pc-polaroid-img.pc-developed {
+  filter: none;
+  transition: filter 1.6s ease;
+}
+
+.pc-polaroid-caption {
+  text-align: center;
+  color: #4a4238;
+  font-size: 15px;
+  padding-top: 8px;
+}
+
+.pc-polaroid-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pc-mini-btn {
+  display: flex; align-items: center; gap: 4px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #14150f;
+  background: #8bac0f;
+  border: 2px solid #14150f;
+  padding: 6px 8px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 0 #14150f;
+}
+.pc-mini-btn:active { transform: translate(3px, 3px); box-shadow: none; }
+
+.pc-error { color: #ff6b6b; font-size: 15px; }
+
+/* ===== HUD KELAS ===== */
+.pc-hud {
+  margin-top: 20px;
+  background: #14150f;
+  border: 2px solid #33382b;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.pc-hud-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pc-chip {
+  display: flex; align-items: center; gap: 4px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  border: 1px solid;
+  padding: 4px 6px;
+  border-radius: 3px;
+}
+
+/* ===== LOADER ===== */
+.pc-loader-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.pc-loader-ring { position: relative; width: 40px; height: 40px; }
+.pc-loader-ring span {
+  position: absolute; top: 50%; left: 50%;
+  width: 6px; height: 6px;
+  background: #8bac0f;
+  transform: rotate(calc(var(--i) * 45deg)) translate(16px) rotate(calc(var(--i) * -45deg));
+  animation: pc-ring-fade 1s steps(1) infinite;
+  animation-delay: calc(var(--i) * -0.125s);
+}
+@keyframes pc-ring-fade { 0%, 12.5% { opacity: 1; } 13%, 100% { opacity: 0.15; } }
+
+@keyframes pc-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.25; } }
+.animate-pc-blink { animation: pc-blink 1.2s steps(1) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-tally-on, .pc-loader-ring span, .animate-pc-blink, .pc-polaroid { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 380px) {
+  .pc-shutter { width: 40px; height: 40px; right: -10px; }
+}
+
+/* ===== TABLET / DESKTOP: layout 2 kolom kayak photo-booth ===== */
+@media (min-width: 860px) {
+  .pc-page-inner {
+    max-width: 980px;
+  }
+
+  .pc-stage {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 28px;
+  }
+
+  .pc-stage-camera {
+    flex: 1.4;
+  }
+
+  .pc-stage-output {
+    flex: 1;
+    position: sticky;
+    top: 24px;
+  }
+
+  .pc-shutter {
+    width: 54px;
+    height: 54px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .pc-page-inner {
+    max-width: 1160px;
+  }
+}
