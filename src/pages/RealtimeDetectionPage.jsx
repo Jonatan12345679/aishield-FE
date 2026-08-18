@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { blurAiApi } from "@/services/blurAiApi.js";
 
+const MODEL_SIZE = 640;
+
 export default function RealtimeDetectionPage() {
     const videoRef = useRef(null);
     const overlayCanvasRef = useRef(null);
@@ -32,7 +34,15 @@ export default function RealtimeDetectionPage() {
             const stream =
                 await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: "environment",
+                        facingMode: {
+                            ideal: "environment",
+                        },
+                        width: {
+                            ideal: 1280,
+                        },
+                        height: {
+                            ideal: 720,
+                        },
                     },
                     audio: false,
                 });
@@ -42,64 +52,129 @@ export default function RealtimeDetectionPage() {
             videoRef.current.srcObject = stream;
 
             videoRef.current.onloadedmetadata = () => {
+                console.log(
+                    "Camera resolution:",
+                    videoRef.current.videoWidth,
+                    "x",
+                    videoRef.current.videoHeight
+                );
+
                 setIsCameraReady(true);
             };
         } catch (error) {
-            console.error("Camera error:", error);
+            console.error(
+                "Camera error:",
+                error
+            );
         }
     };
 
     const stopCamera = () => {
-        const stream = videoRef.current?.srcObject;
+        const stream =
+            videoRef.current?.srcObject;
 
         if (!stream) return;
 
         stream
             .getTracks()
-            .forEach((track) => track.stop());
+            .forEach((track) => {
+                track.stop();
+            });
     };
 
+    /*
+     * Capture video menjadi 640x640
+     *
+     * IMPORTANT:
+     * Kita menggunakan crop yang sama dengan
+     * area yang benar-benar dikirim ke backend.
+     */
     const captureFrame = () => {
         return new Promise((resolve) => {
-            const video = videoRef.current;
-            const canvas = captureCanvasRef.current;
+            const video =
+                videoRef.current;
+
+            const canvas =
+                captureCanvasRef.current;
 
             if (!video || !canvas) {
                 resolve(null);
                 return;
             }
 
-            canvas.width = 640;
-            canvas.height = 640;
+            const videoWidth =
+                video.videoWidth;
 
-            const ctx = canvas.getContext("2d");
+            const videoHeight =
+                video.videoHeight;
+
+            if (
+                !videoWidth ||
+                !videoHeight
+            ) {
+                resolve(null);
+                return;
+            }
+
+            canvas.width =
+                MODEL_SIZE;
+
+            canvas.height =
+                MODEL_SIZE;
+
+            const ctx =
+                canvas.getContext("2d");
 
             if (!ctx) {
                 resolve(null);
                 return;
             }
 
+            /*
+             * Ambil bagian tengah video
+             * berbentuk persegi.
+             */
+            const cropSize =
+                Math.min(
+                    videoWidth,
+                    videoHeight
+                );
+
+            const sourceX =
+                (videoWidth -
+                    cropSize) /
+                2;
+
+            const sourceY =
+                (videoHeight -
+                    cropSize) /
+                2;
+
             ctx.clearRect(
                 0,
                 0,
-                canvas.width,
-                canvas.height
+                MODEL_SIZE,
+                MODEL_SIZE
             );
 
             ctx.drawImage(
                 video,
+                sourceX,
+                sourceY,
+                cropSize,
+                cropSize,
                 0,
                 0,
-                canvas.width,
-                canvas.height
+                MODEL_SIZE,
+                MODEL_SIZE
             );
 
             canvas.toBlob(
                 (blob) => {
                     resolve(blob);
                 },
-                "image/webp",
-                0.5
+                "image/jpeg",
+                0.8
             );
         });
     };
@@ -113,7 +188,8 @@ export default function RealtimeDetectionPage() {
         }
 
         try {
-            isDetectingRef.current = true;
+            isDetectingRef.current =
+                true;
 
             const imageBlob =
                 await captureFrame();
@@ -142,7 +218,8 @@ export default function RealtimeDetectionPage() {
             let detectedObjects = [];
 
             if (Array.isArray(result)) {
-                detectedObjects = result;
+                detectedObjects =
+                    result;
             } else if (
                 Array.isArray(
                     result?.detections
@@ -150,8 +227,12 @@ export default function RealtimeDetectionPage() {
             ) {
                 detectedObjects =
                     result.detections;
-            } else if (result?.box) {
-                detectedObjects = [result];
+            } else if (
+                result?.box
+            ) {
+                detectedObjects = [
+                    result,
+                ];
             }
 
             setDetections(
@@ -167,7 +248,8 @@ export default function RealtimeDetectionPage() {
                 error
             );
         } finally {
-            isDetectingRef.current = false;
+            isDetectingRef.current =
+                false;
 
             if (
                 isMountedRef.current
@@ -179,90 +261,231 @@ export default function RealtimeDetectionPage() {
         }
     };
 
-    const drawDetections = (
-        detections
-    ) => {
+    /*
+     * Mapping:
+     *
+     * Backend:
+     * 640 x 640
+     *
+     * Video:
+     * ukuran asli kamera
+     *
+     * Kita harus mengembalikan koordinat
+     * dari crop 640x640 ke posisi video.
+     */
+    const drawDetections = (items) => {
         const canvas =
             overlayCanvasRef.current;
 
-        if (!canvas) return;
+        const video =
+            videoRef.current;
+
+        if (!canvas || !video) {
+            return;
+        }
+
+        const rect =
+            video.getBoundingClientRect();
+
+        const displayWidth =
+            rect.width;
+
+        const displayHeight =
+            rect.height;
+
+        if (
+            displayWidth <= 0 ||
+            displayHeight <= 0
+        ) {
+            return;
+        }
+
+        /*
+         * Canvas harus sama persis dengan
+         * ukuran tampilan video.
+         */
+        const dpr =
+            window.devicePixelRatio || 1;
+
+        canvas.width =
+            displayWidth * dpr;
+
+        canvas.height =
+            displayHeight * dpr;
+
+        canvas.style.width =
+            `${displayWidth}px`;
+
+        canvas.style.height =
+            `${displayHeight}px`;
 
         const ctx =
             canvas.getContext("2d");
 
         if (!ctx) return;
 
+        ctx.setTransform(
+            dpr,
+            0,
+            0,
+            dpr,
+            0,
+            0
+        );
+
         ctx.clearRect(
             0,
             0,
-            canvas.width,
-            canvas.height
+            displayWidth,
+            displayHeight
         );
 
-        const scaleX =
-            canvas.width / 640;
+        /*
+         * Ukuran asli kamera.
+         */
+        const videoWidth =
+            video.videoWidth;
 
-        const scaleY =
-            canvas.height / 640;
+        const videoHeight =
+            video.videoHeight;
 
-        detections.forEach(
-            (detection) => {
-                const box =
-                    detection.box;
+        if (
+            !videoWidth ||
+            !videoHeight
+        ) {
+            return;
+        }
 
-                if (!box) return;
+        /*
+         * Karena captureFrame mengambil
+         * crop persegi dari tengah kamera,
+         * kita harus mengetahui crop tersebut.
+         */
+        const cropSize =
+            Math.min(
+                videoWidth,
+                videoHeight
+            );
 
-                const x =
-                    box.x * scaleX;
+        const cropOffsetX =
+            (videoWidth -
+                cropSize) /
+            2;
 
-                const y =
-                    box.y * scaleY;
+        const cropOffsetY =
+            (videoHeight -
+                cropSize) /
+            2;
 
-                const width =
-                    box.width *
-                    scaleX;
+        /*
+         * Mapping koordinat model
+         * kembali ke koordinat video asli.
+         */
+        const modelToVideo =
+            cropSize / MODEL_SIZE;
 
-                const height =
-                    box.height *
-                    scaleY;
+        /*
+         * Kemudian video asli dipetakan
+         * ke ukuran video di layar.
+         */
+        const displayScaleX =
+            displayWidth /
+            videoWidth;
 
-                ctx.strokeStyle =
-                    "red";
+        const displayScaleY =
+            displayHeight /
+            videoHeight;
 
-                ctx.lineWidth = 4;
+        items.forEach((item) => {
+            const box =
+                item?.box;
 
-                ctx.strokeRect(
-                    x,
-                    y,
-                    width,
-                    height
-                );
+            if (!box) return;
 
-                ctx.fillStyle =
-                    "red";
+            /*
+             * Dari model 640
+             * ke video asli.
+             */
+            const videoX =
+                cropOffsetX +
+                box.x *
+                    modelToVideo;
 
-                ctx.font =
-                    "18px Arial";
+            const videoY =
+                cropOffsetY +
+                box.y *
+                    modelToVideo;
 
-                ctx.fillText(
-                    `${detection.class} ${(
-                        detection.confidence *
-                        100
-                    ).toFixed(1)}%`,
-                    x,
-                    Math.max(
-                        20,
-                        y - 5
-                    )
-                );
-            }
-        );
+            const videoWidthBox =
+                box.width *
+                modelToVideo;
+
+            const videoHeightBox =
+                box.height *
+                modelToVideo;
+
+            /*
+             * Dari video asli
+             * ke ukuran layar.
+             */
+            const x =
+                videoX *
+                displayScaleX;
+
+            const y =
+                videoY *
+                displayScaleY;
+
+            const width =
+                videoWidthBox *
+                displayScaleX;
+
+            const height =
+                videoHeightBox *
+                displayScaleY;
+
+            ctx.strokeStyle =
+                "red";
+
+            ctx.lineWidth = 3;
+
+            ctx.strokeRect(
+                x,
+                y,
+                width,
+                height
+            );
+
+            ctx.fillStyle =
+                "red";
+
+            ctx.font =
+                "16px Arial";
+
+            const label =
+                `${item.class} ${(
+                    item.confidence *
+                    100
+                ).toFixed(1)}%`;
+
+            ctx.fillText(
+                label,
+                x,
+                Math.max(
+                    20,
+                    y - 6
+                )
+            );
+        });
     };
 
     return (
         <div
             style={{
-                padding: 20,
+                width: "100%",
+                padding: "20px",
+                boxSizing:
+                    "border-box",
             }}
         >
             <h1>
@@ -274,12 +497,20 @@ export default function RealtimeDetectionPage() {
                 style={{
                     position:
                         "relative",
-                    width: 800,
-                    height: 600,
-                    border:
-                        "1px solid #ccc",
+
+                    width: "100%",
+
+                    maxWidth:
+                        "800px",
+
+                    margin:
+                        "0 auto",
+
                     overflow:
                         "hidden",
+
+                    background:
+                        "#000",
                 }}
             >
                 <video
@@ -288,17 +519,17 @@ export default function RealtimeDetectionPage() {
                     muted
                     playsInline
                     style={{
-                        position:
-                            "absolute",
-                        top: 0,
-                        left: 0,
+                        display:
+                            "block",
+
                         width:
                             "100%",
+
                         height:
-                            "100%",
+                            "auto",
+
                         objectFit:
                             "contain",
-                        zIndex: 1,
                     }}
                 />
 
@@ -306,18 +537,19 @@ export default function RealtimeDetectionPage() {
                     ref={
                         overlayCanvasRef
                     }
-                    width={800}
-                    height={600}
                     style={{
                         position:
                             "absolute",
+
                         top: 0,
                         left: 0,
+
                         width:
                             "100%",
+
                         height:
                             "100%",
-                        zIndex: 2,
+
                         pointerEvents:
                             "none",
                     }}
@@ -329,21 +561,27 @@ export default function RealtimeDetectionPage() {
                     captureCanvasRef
                 }
                 style={{
-                    display: "none",
+                    display:
+                        "none",
                 }}
             />
 
             <div
                 style={{
-                    marginTop: 20,
+                    marginTop:
+                        "20px",
                 }}
             >
                 <h3>
-                    Detection
-                    Result
+                    Detection Result
                 </h3>
 
-                <pre>
+                <pre
+                    style={{
+                        overflowX:
+                            "auto",
+                    }}
+                >
                     {JSON.stringify(
                         detections,
                         null,
