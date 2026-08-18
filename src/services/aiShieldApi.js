@@ -1,6 +1,12 @@
 
 import { request } from './apiClient'
 
+const BASE_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+
+export const REPORT_URL = (limit = 1000) =>
+  `${BASE_URL}/dashboard/report?limit=${limit}`
+
 export const aiShieldApi = {
   getDashboardSummary: () => request('/dashboard/summary'),
 

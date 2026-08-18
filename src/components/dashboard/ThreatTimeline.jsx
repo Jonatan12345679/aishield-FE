@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { aiShieldApi } from '@/services/aiShieldApi'
+import { REPORT_URL } from '@/services/aiShieldApi'
 import { useWebSocket } from '@/hooks/useWebSocket'
 import '@/assets/styles/ThreatTimeline.css'
 
@@ -152,7 +153,16 @@ export default function ThreatTimeline() {
         <span>
           ENTRIES: <span className="timeline__footer-accent">{entries?.length ?? 0}</span> / {LIMIT}
         </span>
-        <span>REFRESH: {REFRESH_INTERVAL_MS / 1000}s</span>
+        <div className="timeline__footer-right">
+          <span>REFRESH: {REFRESH_INTERVAL_MS / 1000}s</span>
+          <button
+            className="timeline__export-btn"
+            onClick={() => window.open(REPORT_URL(1000), '_blank')}
+            title="Download laporan insiden (CSV)"
+          >
+            ⬇ EXPORT
+          </button>
+        </div>
       </div>
     </div>
   )

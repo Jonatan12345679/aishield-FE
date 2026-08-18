@@ -449,6 +449,36 @@
   }
 }
 
+.timeline__footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.timeline__export-btn {
+  padding: 4px 8px;
+  border: 2px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.7);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.timeline__export-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.8);
+  background: rgba(34, 211, 238, 0.1);
+}
+
+.timeline__export-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
 @media (max-width: 768px) {
   .timeline__columns {
     display: none;
