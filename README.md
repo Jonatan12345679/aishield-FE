@@ -1,413 +1,150 @@
-# AIShield Frontend
+# Aegis AI — Frontend
 
-AIShield Frontend is a cyber-security themed web application built with React, Vite, Tailwind CSS, and PxlKit UI components.
+Frontend untuk Aegis AI, platform AI yang punya 2 modul:
+- AIShield — dashboard deteksi anomali jaringan pakai Isolation Forest
+- BlurAI — scanner privasi gambar pakai YOLO
 
-The application consists of two main AI-powered modules:
-
-1. **AIShield** – Network Anomaly & Cyber Threat Detection Dashboard powered by Isolation Forest.
-2. **BlurAI** – Privacy Protection Scanner powered by YOLO Computer Vision for detecting and blurring sensitive information.
-
----
-
-# Main Theme
-
-AIShield follows a futuristic cyber-security and retro pixel aesthetic.
-
-### Design Characteristics
-
-- Cyberpunk-inspired UI
-- Pixel-art dashboard elements
-- Terminal-style interface
-- Neon cyan, green, purple, and red accents
-- Security Operations Center (SOC) style monitoring experience
-- Real-time threat visualization
-- Gamified security monitoring
+Ini repo frontend-nya aja. Backend ada di repo terpisah (`aishield-backend`).
 
 ---
 
-# Technology Stack
+## 🖥️ Tech Stack
 
-## Frontend Framework
-
-- React 19
-- Vite
-
-## Routing
-
-- React Router DOM
-
-## Styling
-
-- Tailwind CSS v4
-- Custom CSS Modules
-- PxlKit Design System
-
-## UI Libraries
-
-- @pxlkit/ui-kit
-- @pxlkit/core
-- @pxlkit/ui
-- @pxlkit/effects
-- @pxlkit/feedback
-- @pxlkit/gamification
-- @pxlkit/parallax
-- @pxlkit/social
-- @pxlkit/weather
-
-## Icons
-
-- Lucide React
-
-## Charts
-
-- Recharts
-
-## Utilities
-
-- clsx
-- tailwind-merge
+- React 19 + Vite 8
+- Tailwind CSS v4 (native v4, bukan legacy config)
+- React Router DOM v7
+- PxlKit — design system pixel-art (@pxlkit/ui-kit, @pxlkit/effects, dll)
+- Recharts — chart (AnomalyChart, RiskGauge)
+- Lucide React — icon set
+- clsx + tailwind-merge — utility class helper
 
 ---
 
-# Project Structure
+## 📦 Struktur Project
+```
+aishield-frontend
+├─ eslint.config.js
+├─ index.html
+├─ package-lock.json
+├─ package.json
+├─ public
+│  ├─ icon.png
+│  └─ icons.svg
+├─ README.md
+├─ src
+│  ├─ App.css
+│  ├─ App.jsx
+│  ├─ assets
+│  │  ├─ img
+│  │  │  ├─ icon.png
+│  │  │  ├─ module-aishield.png
+│  │  │  └─ module-blurai.png
+│  │  ├─ react.svg
+│  │  ├─ styles
+│  │  │  ├─ AiShieldPage.css
+│  │  │  ├─ AlertBanner.css
+│  │  │  ├─ AlertToast.css
+│  │  │  ├─ AnomalyChart.css
+│  │  │  ├─ BlurAiPage.css
+│  │  │  ├─ ExplainPanel.css
+│  │  │  ├─ Header.css
+│  │  │  ├─ LandingPage.css
+│  │  │  ├─ LogStream.css
+│  │  │  ├─ ModelCard.css
+│  │  │  ├─ NotFoundPage.css
+│  │  │  ├─ RealtimeDetectionPage.css
+│  │  │  ├─ RiskGauge.css
+│  │  │  ├─ SimulationPanel.css
+│  │  │  ├─ StatCard.css
+│  │  │  ├─ ThreatTimeline.css
+│  │  │  └─ TopAttackers.css
+│  │  └─ vite.svg
+│  ├─ components
+│  │  ├─ alerts
+│  │  │  ├─ AlertBanner.jsx
+│  │  │  └─ AlertToast.jsx
+│  │  ├─ dashboard
+│  │  │  ├─ AnomalyChart.jsx
+│  │  │  ├─ ExplainPanel.jsx
+│  │  │  ├─ LogStream.jsx
+│  │  │  ├─ ModelCard.jsx
+│  │  │  ├─ RiskGauge.jsx
+│  │  │  ├─ SimulationPanel.jsx
+│  │  │  ├─ StatCards.jsx
+│  │  │  ├─ ThreatTimeline.jsx
+│  │  │  └─ TopAttackers.jsx
+│  │  ├─ layout
+│  │  │  ├─ Header.jsx
+│  │  │  └─ soundToggle.jsx
+│  │  └─ LoadingScreen.jsx
+│  ├─ hooks
+│  │  └─ useWebSocket.js
+│  ├─ index.css
+│  ├─ main.jsx
+│  ├─ pages
+│  │  ├─ AiShieldPage.jsx
+│  │  ├─ BlurAiPage.jsx
+│  │  ├─ LandingPage.jsx
+│  │  ├─ NotFoundPage.jsx
+│  │  └─ RealtimeDetectionPage.jsx
+│  └─ services
+│     ├─ aiShieldApi.js
+│     ├─ apiClient.js
+│     ├─ blurAiApi.js
+│     └─ retroSound.js
+└─ vite.config.js
 
-```text
-src/
-│
-├── api/
-│   └── privacyApi.js
-│
-├── assets/
-│   ├── img/
-│   │   ├── icon.png
-│   │   ├── module-aishield.png
-│   │   └── module-blurai.png
-│   │
-│   └── styles/
-│       ├── LandingPage.css
-│       └── BlurAiPage.css
-│
-├── components/
-│   │
-│   ├── alerts/
-│   │   ├── AlertBanner.jsx
-│   │   └── AlertToast.jsx
-│   │
-│   ├── dashboard/
-│   │   ├── AnomalyChart.jsx
-│   │   ├── LogStream.jsx
-│   │   ├── RiskGauge.jsx
-│   │   ├── SimulationPanel.jsx
-│   │   ├── StatCards.jsx
-│   │   └── ThreatTimeline.jsx
-│   │
-│   ├── layout/
-│   │   └── Header.jsx
-│   │
-│   └── LoadingScreen.jsx
-│
-├── pages/
-│   ├── LandingPage.jsx
-│   ├── AiShieldPage.jsx
-│   ├── BlurAiPage.jsx
-│   └── NotFoundPage.jsx
-│
-├── App.jsx
-├── main.jsx
-└── index.css
 ```
 
 ---
 
-# Application Pages
+## ✨ Fitur AIShield (yang kita fokuskan di sini)
 
-## Landing Page
-
-Route:
-
-```text
-/
-```
-
-Purpose:
-
-Central hub for selecting AI modules.
-
-Features:
-
-- Pixel-themed hero section
-- Animated cyber background
-- AIShield module card
-- BlurAI module card
-- Module navigation
-
-Available Modules:
-
-### AIShield
-
-Network anomaly and cyber threat detection.
-
-### BlurAI
-
-Privacy-sensitive image detection and protection.
+- Live Risk Gauge — skor risiko sistem realtime (safe / watch / elevated / critical)
+- StatCards — angka ringkasan (total events, anomaly rate, risk distribution, attack types)
+- AnomalyChart — breakdown serangan per tipe (port scan, brute force, DDoS, exfiltration)
+- LogStream — live feed event dengan WebSocket streaming, klik row untuk penjelasan AI
+- Explainable AI — z-score per fitur vs baseline traffic normal
+- Top Attackers + IP Blocklist — leaderboard attacker & button block/unblock
+- ThreatTimeline — historis anomali, auto-refresh via polling + WS
+- SimulationPanel — trigger simulasi 5 jenis traffic (normal + 4 attack types)
+- Alert System — banner + toast, juga real-time lintas-tab via WebSocket
+- Model Card — transparansi model (F1, recall per attack type, confusion matrix)
+- Export Report — download CSV laporan insiden
+- Retro Sound Alerts — beep 8-bit ala game jadul (toggle mute di header)
 
 ---
 
-## AIShield Dashboard
+## ✨ Fitur BlurAI (dikerjakan di modul terpisah)
 
-Route:
-
-```text
-/aishield
-```
-
-Purpose:
-
-Cyber Security Operations Center dashboard.
-
-Features:
-
-### Risk Gauge
-
-Displays current system risk level.
-
-### Statistics Cards
-
-Shows:
-
-- Total logs
-- Normal activities
-- Threat count
-- Response time
-
-### Threat Timeline
-
-Displays security events chronologically.
-
-### Anomaly Chart
-
-Visualizes anomaly detection activity.
-
-### Log Stream
-
-Live security activity feed.
-
-### Simulation Panel
-
-Allows demonstration of:
-
-- Normal activity
-- Threat activity
-- Anomaly scenarios
-
-### Alert System
-
-Includes:
-
-- Alert Banner
-- Toast Notifications
+- Upload gambar (PNG / JPG / JPEG)
+- Deteksi data sensitif: KTP, QR Code, Plat Nomor, Struk
+- Auto-blur region yang terdeteksi
+- Download gambar yang sudah di-blur
+- RealTime Detection dengan live camera
 
 ---
 
-## BlurAI Privacy Scanner
+## 🚀 Cara Jalankan
 
-Route:
-
-```text
-/blurai
-```
-
-Purpose:
-
-Detect and protect sensitive information in images.
-
-Powered by:
-
-- YOLO Object Detection
-- Privacy Detection API
-
-Features:
-
-### Upload Image
-
-Supported:
-
-- PNG
-- JPG
-- JPEG
-
-### Detect Sensitive Data
-
-Supported Classes:
-
-- KTP
-- QR Code
-- Vehicle License Plate
-- Receipt
-
-### Privacy Analysis HUD
-
-Displays:
-
-- Detection count
-- Average confidence
-- Processing progress
-- Detection classes
-
-### Blur Protection
-
-Automatically blurs detected sensitive regions.
-
-### Download Protected Image
-
-Export processed image after privacy protection.
-
-### Visual Components
-
-Uses:
-
-- PixelButton
-- PixelBadge
-- PixelAlert
-- PixelDivider
-- PixelSkeleton
-- PixelToast
-
----
-
-## Not Found Page
-
-Route:
-
-```text
-*
-```
-
-Purpose:
-
-Handles unknown routes and invalid URLs.
-
----
-
-# API Integration
-
-## Privacy Detection API
-
-Location:
-
-```text
-src/api/privacyApi.js
-```
-
-Endpoints:
-
-### Scan Image
-
-```http
-POST /scan
-```
-
-Response:
-
-```json
-{
-  "success": true,
-  "message": "Privacy detection completed",
-  "detections": [],
-  "image": "base64..."
-}
-```
-
-### Blur Image
-
-```http
-POST /blur
-```
-
-Response:
-
-```json
-{
-  "success": true,
-  "message": "Privacy blur completed",
-  "image": "base64..."
-}
-```
-
----
-
-# Environment Variables
-
-Create:
-
-```text
-.env
-```
-
-Example:
-
-```env
-VITE_BACKEND_BASE_URL=http://localhost:8000
-```
-
----
-
-# Installation
+### 1. Install dependencies
 
 ```bash
 npm install
-```
 
-Run development server:
+### 2. Setup environment
+VITE_API_URL=http://localhost:8000/api/v1
+VITE_API_BASE_URL=http://localhost:8000
+VITE_WS_URL=ws://localhost:8000/api/v1
 
+### 3. Run dev server
 ```bash
 npm run dev
-```
 
-Build production:
-
+### 4. Build production
 ```bash
 npm run build
-```
-
-Preview build:
-
-```bash
 npm run preview
-```
 
----
-
-# AI Modules
-
-## Module 01 — AIShield
-
-Machine Learning based anomaly detection dashboard.
-
-Core Concept:
-
-- Isolation Forest
-- Network Monitoring
-- Threat Detection
-- Security Analytics
-
----
-
-## Module 02 — BlurAI
-
-Computer Vision privacy protection engine.
-
-Core Concept:
-
-- YOLO Detection
-- PII Detection
-- Image Redaction
-- Privacy Protection
-
----
-
-# Authors
-
-AIShield Team
-
-Built for Cyber Security & Artificial Intelligence Demonstration Platform.
+🤝 Tim
+Aegis AI Team

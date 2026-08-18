@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { ShieldCheck, ScanFace, ChevronDown, Menu } from 'lucide-react'
+import SoundToggle from './SoundToggle'
 import icon from '@/assets/img/icon.png'
 import '@/assets/styles/Header.css'
 
@@ -158,6 +159,8 @@ export default function Header({ isThreatActive }) {
               </span>
             </div>
           </div>
+
+           <SoundToggle /> 
 
           <div className="aishield-header__clock">
             <span className="aishield-header__clock-label">SYS.TIME</span>

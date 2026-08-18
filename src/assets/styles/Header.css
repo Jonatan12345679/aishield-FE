@@ -200,6 +200,11 @@
   animation: dropdown-slide 0.2s ease;
 }
 
+.sound-toggle {
+  width: 32px;
+  height: 32px;
+}
+
 @keyframes dropdown-slide {
   from {
     opacity: 0;
