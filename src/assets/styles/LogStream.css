@@ -415,6 +415,13 @@
   border-bottom: 1px solid rgba(28, 41, 64, 0.4);
 }
 
+.log-badge--blocked {
+  --risk-color: #64748b;
+  margin-left: 6px;
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
 @media (max-width: 900px) {
   .log-col--attack { width: 90px; }
   .log-col--score { width: 50px; }

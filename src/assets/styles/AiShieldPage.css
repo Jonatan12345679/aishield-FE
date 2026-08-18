@@ -241,6 +241,10 @@
   box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.7);
 }
 
+.aishield-row--1-2 {
+  grid-template-columns: 1fr 1.6fr;
+}
+
 .aishield-hero__chip--cyan   { --chip: #22d3ee; }
 .aishield-hero__chip--yellow { --chip: #facc15; }
 .aishield-hero__chip--rose   { --chip: #ff5c8a; }
@@ -276,6 +280,10 @@
   
   .aishield-page__container {
     padding: 16px;
+  }
+
+  .aishield-row--1-2 { 
+    grid-template-columns: 1fr; 
   }
   
   .aishield-page__main {

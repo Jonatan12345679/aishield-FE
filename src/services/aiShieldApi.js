@@ -26,4 +26,15 @@ export const aiShieldApi = {
     }),
 
      explainEvent: (eventId) => request(`/dashboard/events/${eventId}/explain`),
+
+  getTopAttackers: () => request('/dashboard/top-attackers'),
+
+    blockIp: (ip) =>
+      request('/dashboard/blocklist', {
+        method: 'POST',
+        body: JSON.stringify({ ip }),
+      }),
+
+    unblockIp: (ip) =>
+      request(`/dashboard/blocklist/${encodeURIComponent(ip)}`, { method: 'DELETE' }),
 }

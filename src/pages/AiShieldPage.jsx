@@ -9,6 +9,7 @@ import ThreatTimeline from '@/components/dashboard/ThreatTimeline'
 import SimulationPanel from '@/components/dashboard/SimulationPanel'
 import AlertBanner from '@/components/alerts/AlertBanner'
 import AlertToast from '@/components/alerts/AlertToast'
+import TopAttackers from '@/components/dashboard/TopAttackers'
 import '@/assets/styles/AiShieldPage.css'
 import { useWebSocket } from '@/hooks/useWebSocket' 
 
@@ -154,8 +155,11 @@ export default function AiShieldPage() {
             <LogStream anomalyOnly={false} limit={20} />
           </div>
 
-          {/* timeline deteksi */}
-          <ThreatTimeline />
+          {/* timeline deteksi + attackers */}
+          <div className="aishield-row aishield-row--1-2">
+            <TopAttackers />
+            <ThreatTimeline />
+          </div>
         </main>
 
         <footer className="aishield-page__footer">

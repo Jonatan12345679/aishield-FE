@@ -153,6 +153,7 @@ export default function LogStream({ anomalyOnly = false, limit = 20 }) {
                     ? e.attack_type.replace(/_/g, ' ').toUpperCase() 
                     : <span className="log-none">—</span>
                   }
+                  {e.is_blocked && <span className="log-badge log-badge--blocked">BLK</span>}
                 </span>
                 <span className="log-col log-col--risk">
                   <span 
