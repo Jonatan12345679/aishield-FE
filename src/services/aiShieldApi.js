@@ -25,7 +25,5 @@ export const aiShieldApi = {
       body: JSON.stringify({ attack_type: attackType, count: count || null }),
     }),
 
-    explainEvent(eventId) {
-      return request (`/dashboard/events/$events`)
-    }
+     explainEvent: (eventId) => request(`/dashboard/events/${eventId}/explain`),
 }
