@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Aperture, Download, RotateCcw, ShieldCheck, IdCard, QrCode, Car, Receipt } from "lucide-react";
-import { blurAiApi } from "@/services/blurAiApi.js";
 import "@/assets/styles/RealtimeDetectionPage.css";
+import Header from '@/components/layout/Header'
+
+import { blurAiApi } from "@/services/blurAiApi.js";
+
+
 
 const MODEL_SIZE = 640;
 
@@ -45,7 +49,6 @@ export default function RealtimeDetectionPage() {
     const [detections, setDetections] = useState([]);
     const [isCameraReady, setIsCameraReady] = useState(false);
 
-    // ==== Alur capture -> blur -> "develop" -> download ====
     const [captureState, setCaptureState] = useState("idle"); // idle | processing | ejected
     const [capturedImage, setCapturedImage] = useState(null);
     const [isDeveloped, setIsDeveloped] = useState(false);
@@ -202,7 +205,6 @@ export default function RealtimeDetectionPage() {
         });
     };
 
-    // ==== Shutter: ambil full-res -> blur -> develop -> auto download ====
     const captureFullResFrame = () => {
         return new Promise((resolve) => {
             const video = videoRef.current;
@@ -252,7 +254,6 @@ export default function RealtimeDetectionPage() {
             setCapturedImage(imageUrl);
             setCaptureState("ejected");
 
-            // Efek "developing" ala polaroid sebelum benar-benar jelas
             setTimeout(() => setIsDeveloped(true), 120);
 
             triggerDownload(imageUrl, `blurai-pocket-${Date.now()}.jpg`);
@@ -301,12 +302,13 @@ export default function RealtimeDetectionPage() {
     return (
         <div className="pc-page">
             <div className="pc-page-inner">
-                <h1 className="font-pixel-display text-sm sm:text-base text-center text-[#e8dcc8] mb-8 tracking-wider">
+            <Header className="relative z-10" />
+
+                <h1 className="font-pixel-display text-sm sm:text-base text-center text-[#e8dcc8] mb-8 tracking-wider mt-10">
                     BLUR<span className="text-[#4cc2ff]">AI</span> INSTANT
                 </h1>
 
                 <div className="pc-stage">
-                    {/* ==== KIRI: BODY KAMERA ==== */}
                     <div className="pc-stage-camera">
                         <div className="pc-camera">
                             <div className="pc-camera-top">
@@ -360,7 +362,6 @@ export default function RealtimeDetectionPage() {
                         </div>
                     </div>
 
-                    {/* ==== KANAN: OUTPUT SLOT (foto + hud) ==== */}
                     <div className="pc-stage-output">
                         <div className="pc-output-slot">
                             {captureState !== "idle" && capturedImage ? (

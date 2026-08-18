@@ -355,3 +355,5 @@
     --pixel-cut: 6px;
   }
 }
+
+.pixel-accent-yellow { --accent: var(--pixel-yellow); }

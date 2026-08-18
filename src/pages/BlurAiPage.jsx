@@ -15,7 +15,6 @@ import {
 } from 'lucide-react'
 
 import {
-  PixelCard,
   PixelButton,
   PixelBadge,
   PixelAlert,
@@ -33,6 +32,8 @@ import Header from '@/components/layout/Header'
 import { blurAiApi } from '@/services/blurAiApi.js'
 
 import '@/assets/styles/BlurAiPage.css'
+
+import { useNavigate } from 'react-router-dom'
 
 const STATUS = {
   IDLE: 'idle',
@@ -99,6 +100,8 @@ function PixelMeter({ value, color }) {
 }
 
 export default function BlurAiPage() {
+  const navigate = useNavigate()
+
   const [files, setFiles] = useState([])
   const [status, setStatus] = useState(STATUS.IDLE)
   const [previewUrl, setPreviewUrl] = useState(null)
@@ -271,6 +274,38 @@ export default function BlurAiPage() {
           </div>
         </section>
 
+
+        {/* CTA: REALTIME MODE */}
+        <button
+          type="button"
+          onClick={() => navigate('/realtime-detection')}
+          className="w-full mb-10 pixel-frame pixel-accent-yellow hover:-translate-y-1 transition-transform duration-150 text-left"
+        >
+          <div className="pixel-frame-inner flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-4">
+            <div className="flex items-center gap-4">
+              <div className="pixel-icon-box shrink-0" style={{ borderColor: '#ffcc00', color: '#ffcc00' }}>
+                <ScanLine size={18} />
+              </div>
+              <div>
+                <div className="font-pixel-display text-[9px] text-[#ffcc00] mb-2 animate-pixel-blink">
+                  ▸ NEW FEATURE ◂
+                </div>
+                <div className="font-pixel-display text-xs sm:text-sm text-white uppercase tracking-wider">
+                  Wanna Try Realtime? Click Here
+                </div>
+                <p className="font-pixel-body text-lg text-slate-400 mt-1">
+                  Live camera privacy detection — instant capture, blur, and download.
+                </p>
+              </div>
+            </div>
+
+            <PixelButton tone="gold" size="sm" className="font-pixel-display text-[9px] shrink-0" iconRight={<ArrowRight size={14} />}>
+              GO REALTIME
+            </PixelButton>
+          </div>
+        </button>
+
+        <div ref={workspaceRef} className="mb-20"></div>
 
         <div ref={workspaceRef} className="mb-20">
           <div className="pixel-frame pixel-accent-cyan">

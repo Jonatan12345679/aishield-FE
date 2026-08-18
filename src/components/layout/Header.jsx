@@ -4,6 +4,7 @@ import { ShieldCheck, ScanFace, ChevronDown, Menu } from 'lucide-react'
 import icon from '@/assets/img/icon.png'
 import '@/assets/styles/Header.css'
 
+
 export default function Header({ isThreatActive }) {
   const [time, setTime] = useState('')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
